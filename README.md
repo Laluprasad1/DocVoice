@@ -1,5 +1,8 @@
 # 🎤 PDF Speech Reader - AI/ML Reading Practice App
 
+[Live Site](https://doc-voice-lalu.vercel.app)
+
+
 ## 📌 Overview
 
 **PDF Speech Reader** is an intelligent, full-stack web application that transforms PDF documents into interactive reading practice exercises. Using speech-to-text technology, it helps users improve their reading skills by verifying pronunciation and comprehension.
