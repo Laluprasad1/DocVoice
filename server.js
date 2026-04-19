@@ -8,12 +8,19 @@ const { spawnSync } = require('child_process');
 const { randomUUID } = require('crypto');
 const cors = require('cors');
 const ffmpeg = require('fluent-ffmpeg');
-const ffmpegPath = require('ffmpeg-static');
 const { WaveFile } = require('wavefile');
 const axios = require('axios');
 const session = require('express-session');
 const db = require('./database');
 require('dotenv').config();
+
+let ffmpegPath = null;
+try {
+  ffmpegPath = require('ffmpeg-static');
+} catch (error) {
+  ffmpegPath = null;
+  console.warn(`ffmpeg-static is unavailable in this environment. Reason: ${error.message}`);
+}
 
 // Initialize database
 db.initializeDatabase();
