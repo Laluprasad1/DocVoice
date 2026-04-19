@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in - DocVoice Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #1e40af;
+            --text: #0f172a;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --bg: #eef2f7;
+            --border: #dbe2ea;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 12px;
+        }
+
+        .auth-shell {
+            width: min(1240px, 100%);
+            min-height: 720px;
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+        }
+
+        .side {
+            background: radial-gradient(circle at left center, rgba(255,255,255,0.09) 1px, transparent 1px), linear-gradient(160deg, #1f3a8f 0%, #1e3a8a 80%);
+            background-size: 120px 120px, auto;
+            color: #fff;
+            padding: 42px 34px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .brand {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .side h2 {
+            font-size: 2.45rem;
+            line-height: 1.1;
+            margin-bottom: 18px;
+            max-width: 320px;
+        }
+
+        .side p {
+            color: #c7d2fe;
+            max-width: 320px;
+            line-height: 1.6;
+        }
+
+        .side-metrics {
+            display: grid;
+            gap: 14px;
+            margin-top: 30px;
+        }
+
+        .metric {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .metric strong { font-size: 1.85rem; }
+        .metric span { color: #c7d2fe; }
+
+        .side-footer { color: #93c5fd; font-size: 0.9rem; }
+
+        .panel {
+            padding: 56px 54px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .form-wrap {
+            width: min(520px, 100%);
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            margin-bottom: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-bottom: 28px;
+            font-size: 1.02rem;
+        }
+
+        .msg {
+            display: none;
+            padding: 11px 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.92rem;
+        }
+
+        .msg.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .msg.success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+
+        .group { margin-bottom: 16px; }
+        .group label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .roles {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .roles input { display: none; }
+        .role {
+            padding: 11px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            background: #fff;
+            color: #334155;
+        }
+        .roles input:checked + .role {
+            border-color: var(--primary-dark);
+            background: #eff6ff;
+            color: var(--primary-dark);
+        }
+
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fff;
+        }
+        input:focus {
+            outline: none;
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            font-size: 0.94rem;
+            color: var(--muted);
+        }
+
+        .row a { color: var(--primary-dark); text-decoration: none; font-weight: 600; }
+
+        .btn {
+            width: 100%;
+            border: 0;
+            border-radius: 9px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-primary { background: #2851d1; color: #fff; margin-bottom: 14px; }
+        .btn-primary:hover { background: #2148be; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            color: #94a3b8;
+            font-size: 0.92rem;
+        }
+        .divider::before, .divider::after {
+            content: "";
+            height: 1px;
+            background: #e2e8f0;
+            flex: 1;
+        }
+
+        .oauth {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .oauth button {
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 9px;
+            padding: 11px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+        }
+        .oauth button:hover { border-color: #cbd5e1; background: #f8fafc; }
+
+        .foot {
+            margin-top: 18px;
+            text-align: center;
+            color: var(--muted);
+        }
+        .foot a { color: #1d4ed8; font-weight: 600; text-decoration: none; }
+
+        @media (max-width: 980px) {
+            .auth-shell { grid-template-columns: 1fr; }
+            .side { display: none; }
+            .panel { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-shell">
+        <aside class="side">
+            <div>
+                <div class="brand">DocVoice Pro</div>
+            </div>
+            <div>
+                <h2>Read. Listen. Work faster.</h2>
+                <p>Secure workspace for PDF voice reading with clear playback controls and session continuity.</p>
+                <div class="side-metrics">
+                    <div class="metric"><strong>1.2K</strong><span>sessions this month</span></div>
+                    <div class="metric"><strong>98%</strong><span>parse success rate</span></div>
+                    <div class="metric"><strong>4.9/5</strong><span>user satisfaction</span></div>
+                </div>
+            </div>
+            <div class="side-footer">© 2026 DocVoice Pro</div>
+        </aside>
+
+        <main class="panel">
+            <div class="form-wrap">
+                <h1>Welcome back</h1>
+                <p class="subtitle">Sign in to continue.</p>
+
+                <div class="msg error" id="errorMessage"></div>
+                <div class="msg success" id="successMessage"></div>
+
+                <form id="loginForm">
+                    <div class="group">
+                        <label>Account type</label>
+                        <div class="roles">
+                            <div>
+                                <input type="radio" id="userRole" name="role" value="user" checked>
+                                <label class="role" for="userRole">User</label>
+                            </div>
+                            <div>
+                                <input type="radio" id="adminRole" name="role" value="admin">
+                                <label class="role" for="adminRole">Admin</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <label for="email">Email address</label>
+                        <input type="email" id="email" placeholder="name@company.com" required>
+                    </div>
+
+                    <div class="group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Password" required>
+                    </div>
+
+                    <div class="row">
+                        <label><input type="checkbox" id="rememberMe"> Remember me</label>
+                        <a href="#">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Sign in</button>
+                </form>
+
+                <div class="divider">or continue with</div>
+
+                <div class="oauth">
+                    <button type="button" onclick="loginWithGoogle()">Continue with Google</button>
+                    <button type="button" onclick="loginWithGithub()">Continue with GitHub</button>
+                </div>
+
+                <p class="foot">No account? <a href="/signup">Create account</a></p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const role = document.querySelector('input[name="role"]:checked').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            if (!email || !password) {
+                showError('Please fill in all fields.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters.');
+                return;
+            }
+
+            const userData = {
+                email,
+                role,
+                loginTime: new Date().toISOString()
+            };
+
+            try {
+                const sessionResponse = await fetch('/api/auth/session/local', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, role, name: email.split('@')[0] })
+                });
+                if (!sessionResponse.ok) {
+                    throw new Error('Unable to create session');
+                }
+            } catch (error) {
+                showError('Unable to start session. Please try again.');
+                return;
+            }
+
+            localStorage.setItem('userSession', JSON.stringify(userData));
+            if (rememberMe) {
+                localStorage.setItem('rememberEmail', email);
+            }
+
+            showSuccess('Signed in successfully. Redirecting...');
+            setTimeout(() => {
+                if (role === 'admin') {
+                    window.location.href = '/admin-dashboard';
+                } else {
+                    window.location.href = '/dashboard';
+                }
+            }, 1200);
+        });
+
+        function loginWithGoogle() {
+            // Redirect to backend OAuth endpoint
+            window.location.href = '/api/auth/google';
+        }
+
+        function loginWithGithub() {
+            alert('GitHub authentication will be integrated with backend.');
+        }
+
+        window.addEventListener('load', () => {
+            const rememberEmail = localStorage.getItem('rememberEmail');
+            if (rememberEmail) {
+                document.getElementById('email').value = rememberEmail;
+                document.getElementById('rememberMe').checked = true;
+            }
+
+            // Handle OAuth error messages
+            const params = new URLSearchParams(window.location.search);
+            const error = params.get('error');
+            if (error) {
+                const errorMap = {
+                    'access_denied': 'Google login was cancelled.',
+                    'oauth_failed': 'OAuth authentication failed. Please try again.',
+                    'session_error': 'Session error occurred. Please try again.',
+                    'missing_code': 'Authentication code missing. Please try again.',
+                    'server_error': 'Server error. Please try again.'
+                };
+                showError(errorMap[error] || `Authentication error: ${error}`);
+            }
+        });
+    </script>
+</body>
+</html>

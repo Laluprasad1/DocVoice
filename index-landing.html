@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocVoice Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --primary-soft: #1e293b;
+            --accent: #0d9488;
+            --accent-soft: #14b8a6;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --surface: #ffffff;
+            --surface-muted: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--surface-muted);
+            color: var(--text);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.25rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+            color: #fff;
+            padding: 5.5rem 0 4.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before,
+        .hero::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(30px);
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .hero::before {
+            width: 340px;
+            height: 340px;
+            background: rgba(20, 184, 166, 0.5);
+            top: -120px;
+            right: 8%;
+            animation: floatSlow 10s ease-in-out infinite;
+        }
+
+        .hero::after {
+            width: 260px;
+            height: 260px;
+            background: rgba(59, 130, 246, 0.45);
+            bottom: -120px;
+            left: 12%;
+            animation: floatSlow 12s ease-in-out infinite reverse;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 2rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-copy {
+            animation: fadeUp 0.8s ease both;
+        }
+
+        .hero-visual {
+            position: relative;
+            min-height: 300px;
+            animation: fadeUp 1s ease both;
+        }
+
+        .clip-stack {
+            position: absolute;
+            inset: 0;
+            min-height: 300px;
+        }
+
+        .clip-card {
+            position: absolute;
+            width: 250px;
+            right: 28px;
+            top: 26px;
+            border: 1px solid rgba(226, 232, 240, 0.35);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.6);
+            box-shadow: 0 12px 24px rgba(2, 6, 23, 0.35);
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            transform: translateY(36px) scale(0.96);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .clip-card.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            z-index: 3;
+        }
+
+        .clip-card.exit-up {
+            opacity: 0;
+            transform: translateY(-34px) scale(0.96);
+            z-index: 2;
+        }
+
+        .clip-card.idle {
+            opacity: 0;
+            transform: translateY(34px) scale(0.95);
+            z-index: 1;
+        }
+
+        .clip-head {
+            padding: 8px 10px;
+            font-size: 0.74rem;
+            letter-spacing: 0.2px;
+            color: #cbd5e1;
+            background: rgba(15, 23, 42, 0.75);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+        .clip-screen {
+            height: 124px;
+            position: relative;
+            background: linear-gradient(120deg, #1e293b, #0f172a 30%, #0d9488 65%, #1e293b 100%);
+            background-size: 240% 240%;
+            animation: gradientMove 6s linear infinite;
+        }
+
+        .clip-screen::before {
+            content: "";
+            position: absolute;
+            inset: 18px 16px;
+            border-radius: 8px;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.22),
+                rgba(255, 255, 255, 0.22) 2px,
+                rgba(255, 255, 255, 0) 2px,
+                rgba(255, 255, 255, 0) 10px
+            );
+            transform: translateX(-100%);
+            animation: scan 3.4s ease-in-out infinite;
+        }
+
+        .clip-foot {
+            padding: 8px 10px;
+            color: #94a3b8;
+            font-size: 0.74rem;
+        }
+
+        .hero h1 {
+            font-size: 2.4rem;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            max-width: 760px;
+        }
+
+        .hero p {
+            color: #cbd5e1;
+            max-width: 760px;
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.8rem 1.2rem;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-soft);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(20, 184, 166, 0.22);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border-color: var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-ghost {
+            margin-left: 0.75rem;
+            border-color: #cbd5e1;
+            color: #fff;
+        }
+
+        .btn-google {
+            margin-left: 0.75rem;
+            border-color: rgba(255, 255, 255, 0.65);
+            color: #fff;
+            background: rgba(15, 23, 42, 0.22);
+        }
+
+        .btn-google:hover {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost:hover {
+            border-color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .section {
+            padding: 3.5rem 0;
+        }
+
+        .section h2 {
+            font-size: 1.65rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            max-width: 760px;
+        }
+
+        .kpis {
+            margin-top: 1.5rem;
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .kpi {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .kpi:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+        }
+
+        .kpi strong {
+            display: block;
+            font-size: 1.35rem;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi span {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+        }
+
+        .card h3 {
+            font-size: 1.05rem;
+            margin-bottom: 0.45rem;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.94rem;
+        }
+
+        .module-layout {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .module {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.35rem;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .module .status {
+            display: inline-block;
+            margin-bottom: 0.75rem;
+            font-size: 0.78rem;
+            padding: 0.28rem 0.6rem;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .status-live {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-soon {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .module p {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-size: 0.94rem;
+        }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 0;
+            background: var(--surface);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .module:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(18px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .reveal.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%); opacity: 0; }
+            15% { opacity: 1; }
+            60% { transform: translateX(0%); opacity: 1; }
+            100% { transform: translateX(100%); opacity: 0; }
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-14px) scale(1.05); }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @media (max-width: 640px) {
+            .hero h1 {
+                font-size: 1.85rem;
+            }
+
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-visual {
+                min-height: 230px;
+                margin-top: 0.8rem;
+            }
+
+            .clip-card {
+                width: 210px;
+                right: 12px;
+            }
+
+            .btn-ghost {
+                margin-left: 0;
+                margin-top: 0.6rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="container nav-inner">
+            <div class="brand">DocVoice Pro</div>
+            <div class="nav-right">
+                <nav class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#modules">Modules</a>
+                    <a href="#start">Overview</a>
+                </nav>
+                <a class="btn btn-outline" href="/login">Sign in</a>
+                <a class="btn btn-primary" href="/signup">Create account</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero" id="start">
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-copy">
+                    <h1>Read PDFs with controlled, natural speech output</h1>
+                    <p>Upload a PDF and listen page by page with precise playback, speed control, and cleaner document review flow.</p>
+                    <a class="btn btn-primary" href="/app">Open app</a>
+                    <a class="btn btn-ghost" href="#modules">Roadmap</a>
+                    <a class="btn btn-google" href="/login?oauth=google">Google OAuth</a>
+                </div>
+                <div class="hero-visual" aria-hidden="true">
+                    <div class="clip-stack">
+                        <div class="clip-card active" data-clip="0">
+                            <div class="clip-head">Session Preview</div>
+                            <div class="clip-screen"></div>
+                            <div class="clip-foot">Live waveform sequence</div>
+                        </div>
+                        <div class="clip-card idle" data-clip="1">
+                            <div class="clip-head">Voice Sync</div>
+                            <div class="clip-screen"></div>
+                            <div class="clip-foot">Synchronized speech flow</div>
+                        </div>
+                        <div class="clip-card idle" data-clip="2">
+                            <div class="clip-head">Page Playback</div>
+                            <div class="clip-screen"></div>
+                            <div class="clip-foot">Line-by-line progression</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section reveal" id="features">
+        <div class="container">
+            <h2>Core Features</h2>
+            <p class="section-subtitle">PDF-to-speech workflow in one focused product.</p>
+            <div class="grid">
+                <article class="card">
+                    <h3>PDF Text Extraction</h3>
+                    <p>Upload and parse PDF documents into readable text sections for playback.</p>
+                </article>
+                <article class="card">
+                    <h3>Playback Controls</h3>
+                    <p>Play, pause, resume, and tune reading speed for better comprehension.</p>
+                </article>
+                <article class="card">
+                    <h3>Page Navigation</h3>
+                    <p>Move across pages quickly and keep your place while reviewing long files.</p>
+                </article>
+                <article class="card">
+                    <h3>Accessibility First</h3>
+                    <p>Optimized for accessibility-focused reading and long-form review.</p>
+                </article>
+            </div>
+            <div class="kpis">
+                <div class="kpi">
+                    <strong>1,200+</strong>
+                    <span>PDF sessions processed</span>
+                </div>
+                <div class="kpi">
+                    <strong>98%</strong>
+                    <span>Successful parse runs</span>
+                </div>
+                <div class="kpi">
+                    <strong>4.9/5</strong>
+                    <span>User satisfaction score</span>
+                </div>
+                <div class="kpi">
+                    <strong>2 Modules</strong>
+                    <span>Live + planned modules</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section reveal" id="modules">
+        <div class="container">
+            <h2>Product Modules</h2>
+            <p class="section-subtitle">Current and upcoming modules.</p>
+            <div class="module-layout">
+                <article class="module">
+                    <span class="status status-live">LIVE</span>
+                    <h3>DocVoice Pro</h3>
+                    <p>Converts PDF text into spoken output with page-level control.</p>
+                    <a class="btn btn-primary" href="/app">Open</a>
+                </article>
+                <article class="module">
+                    <span class="status status-soon">COMING SOON</span>
+                    <h3>Speech-to-Text Writer</h3>
+                    <p>Planned module for dictation and editable text generation.</p>
+                    <button class="btn" style="background:#e2e8f0;color:#475569;cursor:not-allowed;" disabled>Soon</button>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 DocVoice Pro</p>
+        </div>
+    </footer>
+
+    <script>
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in');
+                }
+            });
+        }, { threshold: 0.15 });
+
+        revealElements.forEach((element) => observer.observe(element));
+
+        const heroClips = Array.from(document.querySelectorAll('.clip-card'));
+        let activeClipIndex = 0;
+
+        function cycleHeroClips() {
+            const current = heroClips[activeClipIndex];
+            current.classList.remove('active');
+            current.classList.add('exit-up');
+
+            const nextIndex = (activeClipIndex + 1) % heroClips.length;
+            const next = heroClips[nextIndex];
+
+            heroClips.forEach((clip, index) => {
+                if (index !== nextIndex) {
+                    clip.classList.remove('active');
+                    if (clip !== current) {
+                        clip.classList.remove('exit-up');
+                        clip.classList.add('idle');
+                    }
+                }
+            });
+
+            setTimeout(() => {
+                current.classList.remove('exit-up');
+                current.classList.add('idle');
+                next.classList.remove('idle');
+                next.classList.add('active');
+                activeClipIndex = nextIndex;
+            }, 320);
+        }
+
+        setInterval(cycleHeroClips, 2600);
+    </script>
+</body>
+</html>

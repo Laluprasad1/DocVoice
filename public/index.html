@@ -1,0 +1,4091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocVoice Pro</title>
+    <style>
+        :root {
+            --bg: #f3f5f9;
+            --surface: #ffffff;
+            --surface-muted: #f8fafc;
+            --text: #111827;
+            --text-muted: #6b7280;
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --border: #dbe2ea;
+            --success: #15803d;
+            --danger: #b91c1c;
+            --warning: #92400e;
+            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 10px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        html {
+            height: 100%;
+            overflow: auto;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            padding: clamp(10px, 1.8vw, 24px);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1680px;
+            margin: 0 auto;
+            min-height: calc(100vh - clamp(20px, 3.6vw, 48px));
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--surface);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid var(--border);
+            position: sticky;
+            top: 8px;
+            z-index: 70;
+            backdrop-filter: blur(6px);
+        }
+
+        .header h1 {
+            color: var(--text);
+            font-size: 2.1em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.02em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(340px, 0.95fr) minmax(560px, 1.4fr);
+            gap: clamp(14px, 1.8vw, 24px);
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--surface);
+            padding: clamp(16px, 2.2vw, 28px);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card h2 {
+            color: var(--text);
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            font-size: 1.15rem;
+        }
+
+        .upload-area {
+            border: 2px dashed #9db2d6;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--surface-muted);
+        }
+
+        .upload-area:hover {
+            background: #eef4ff;
+            border-color: var(--primary);
+        }
+
+        .upload-area.dragover {
+            background: #e7f0ff;
+            border-color: var(--primary);
+            transform: scale(1.02);
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 0.9em;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: var(--text-muted);
+            font-size: 1em;
+        }
+
+        .file-info {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            border: 1px solid #c8dcff;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-info p {
+            color: var(--primary-strong);
+            font-weight: 600;
+        }
+
+        .reader-section {
+            display: none;
+        }
+
+        .reader-section.active {
+            display: block;
+        }
+
+        .controls-dock {
+            position: sticky;
+            bottom: 10px;
+            z-index: 60;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(6px);
+        }
+
+        .page-content {
+            background: var(--surface-muted);
+            padding: clamp(18px, 3vw, 40px);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--primary);
+            line-height: 2.2;
+            font-size: clamp(1.06rem, 1.1vw, 1.4rem);
+            color: var(--text);
+            font-family: 'Georgia', serif;
+            max-height: min(68vh, 760px);
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            border: 1px solid var(--border);
+        }
+
+        .page-line {
+            margin-bottom: 15px;
+            padding: 10px 5px;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+
+        .page-line.current {
+            border-left: 3px solid var(--primary);
+            padding-left: 8px;
+            background: #f8fbff;
+        }
+
+        .page-line.completed {
+            opacity: 0.9;
+        }
+
+        .word-token {
+            transition: color 0.12s ease;
+        }
+
+        .word-token.correct {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .word-token.incorrect {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .word-token.maybe {
+            color: #b45309;
+            background: #fef3c7;
+            border-radius: 4px;
+            padding: 0 2px;
+            font-weight: 700;
+        }
+
+        .word-token.preview-correct {
+            color: #166534;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .word-token.preview-incorrect {
+            color: #991b1b;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .word-token.current {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .progress-tracker {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .progress-tracker strong {
+            color: #667eea;
+        }
+
+        .word-progress {
+            display: inline;
+            margin-left: 10px;
+            padding: 5px 10px;
+            background: #e8ecff;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .line-indicator {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .page-indicator {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .mode-badge {
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            color: #3730a3;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8em;
+            font-weight: 700;
+        }
+
+        .latency-badge {
+            background: #ecfeff;
+            border: 1px solid #a5f3fc;
+            color: #155e75;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8em;
+            font-weight: 700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .recording-status {
+            margin-top: -4px;
+            margin-bottom: 12px;
+            font-size: 0.92em;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .recording-status.recording {
+            color: var(--success);
+        }
+
+        .recording-status.paused {
+            color: var(--warning);
+        }
+
+        .recording-status.stopped {
+            color: var(--text-muted);
+        }
+
+        button {
+            flex: 1 1 140px;
+            min-width: 140px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-strong);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #eff6ff;
+            color: var(--primary-strong);
+            border: 1px solid #c8dcff;
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .recording-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background: #fef3c7;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            color: #78350f;
+            border: 1px solid #fcd34d;
+        }
+
+        .recording-indicator.active {
+            display: flex;
+            animation: pulse 0.7s infinite;
+        }
+
+        .recording-dot {
+            width: 12px;
+            height: 12px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+
+        .response-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .response-box.show {
+            display: block;
+        }
+
+        .response-box.success {
+            background: #ecfdf3;
+            color: #14532d;
+            border-left: 4px solid #22c55e;
+        }
+
+        .response-box.error {
+            background: #fef2f2;
+            color: #7f1d1d;
+            border-left: 4px solid #ef4444;
+        }
+
+        .response-box.info {
+            background: #eff6ff;
+            color: #1e3a8a;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .response-content h3 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .response-content p {
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .similarity-bar {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .similarity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .transcribed-text {
+            background: var(--surface-muted);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .speaker-icon {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #60a5fa, #2563eb);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .stat-item {
+            background: var(--surface-muted);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85em;
+        }
+
+        .stat-value {
+            color: var(--primary-strong);
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+
+        .support-text {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .header-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.35rem 0.55rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface-muted);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #e2e8f0;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            max-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .role-select {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            background: #fff;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .aux-panel {
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 12px;
+        }
+
+        .aux-panel h3 {
+            font-size: 0.95em;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .vocab-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .vocab-controls input[type="file"] {
+            flex: 1 1 230px;
+        }
+
+        .small-note {
+            color: var(--text-muted);
+            font-size: 0.82em;
+            margin-top: 6px;
+        }
+
+        .coach-panel {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .coach-panel.active {
+            display: block;
+        }
+
+        .coach-list {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .coach-row {
+            display: grid;
+            grid-template-columns: 140px 80px 80px 1fr;
+            gap: 8px;
+            padding: 8px 10px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.82em;
+        }
+
+        .coach-row:last-child {
+            border-bottom: none;
+        }
+
+        .heatmap-list {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fff;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .heatmap-item {
+            display: grid;
+            grid-template-columns: 1fr 58px;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .heatmap-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .heatmap-bar {
+            height: 8px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+            width: 0%;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.9em;
+            }
+
+            .page-content {
+                max-height: min(62vh, 680px);
+            }
+
+            .controls-dock {
+                bottom: 8px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                border-radius: 10px;
+            }
+
+            .page-content {
+                line-height: 2;
+                max-height: 58vh;
+            }
+
+            .controls-dock {
+                bottom: 6px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px 16px;
+                top: 6px;
+            }
+
+            .header h1 {
+                font-size: 1.55em;
+            }
+
+            .header p {
+                font-size: 0.95em;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-area {
+                padding: 28px 16px;
+            }
+
+            .page-content {
+                font-size: 1rem;
+                max-height: 54vh;
+            }
+
+            .controls {
+                gap: 8px;
+            }
+
+            .controls-dock {
+                padding: 8px;
+                border-radius: 8px;
+                bottom: 4px;
+            }
+
+            .session-banner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .analytics-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .analytics-row {
+                grid-template-columns: 34px 54px 54px 54px 62px 1fr;
+                font-size: 0.78em;
+            }
+
+            .header-top-row {
+                justify-content: center;
+            }
+
+            .coach-row {
+                grid-template-columns: 100px 60px 60px 1fr;
+                font-size: 0.78em;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .voice-item {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            button {
+                flex: 1 1 calc(50% - 6px);
+                min-width: 120px;
+                padding: 10px 14px;
+                font-size: 0.93em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                margin-bottom: 12px;
+                top: 4px;
+            }
+
+            .card {
+                padding: 14px;
+            }
+
+            .page-content {
+                padding: 14px;
+                line-height: 1.9;
+                max-height: 50vh;
+            }
+
+            button {
+                flex: 1 1 100%;
+                min-width: 100%;
+            }
+
+            .controls-dock {
+                bottom: 2px;
+            }
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: var(--text-muted);
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .feature-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .no-speech-support {
+            background: #fef2f2;
+            color: #7f1d1d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            border-left: 4px solid #ef4444;
+        }
+
+        .browser-warning {
+            background: #fffbeb;
+            color: #78350f;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f59e0b;
+            border: 1px solid #fde68a;
+        }
+
+        .session-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #eff6ff;
+            border: 1px solid #c8dcff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 15px;
+            color: #1e3a8a;
+            font-size: 0.92em;
+        }
+
+        .session-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .session-actions button {
+            flex: 0 0 auto;
+            min-width: 90px;
+            padding: 8px 10px;
+            font-size: 0.82em;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .dashboard-return {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #c8dcff;
+            background: #eff6ff;
+            color: var(--primary-strong);
+            text-decoration: none;
+            font-size: 0.88em;
+            font-weight: 700;
+        }
+
+        .dashboard-return:hover {
+            background: #dbeafe;
+        }
+
+        .analytics-panel {
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .analytics-title {
+            font-size: 0.93em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .analytics-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(100px, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .analytics-chip {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .analytics-chip-label {
+            color: var(--text-muted);
+            font-size: 0.78em;
+        }
+
+        .analytics-chip-value {
+            color: var(--primary-strong);
+            font-size: 0.98em;
+            font-weight: 700;
+        }
+
+        .analytics-list {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .analytics-row {
+            display: grid;
+            grid-template-columns: 44px 62px 62px 62px 72px 1fr;
+            gap: 8px;
+            padding: 8px 10px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.83em;
+            align-items: center;
+        }
+
+        .analytics-row:last-child {
+            border-bottom: none;
+        }
+
+        .analytics-header {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #334155;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .analytics-row-status.current {
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .analytics-row-status.done {
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .analytics-row-status.pending {
+            color: #64748b;
+        }
+
+        .page-line.hidden-line {
+            display: none;
+        }
+
+        .reader-config {
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(170px, 1fr));
+            gap: 10px;
+            align-items: end;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .config-item label {
+            font-size: 0.82em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .mini-select {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            background: #fff;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .font-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .font-btn {
+            min-width: 40px;
+            flex: 0 0 40px;
+            padding: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #c8dcff;
+            background: #eff6ff;
+            color: var(--primary-strong);
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .font-size-label {
+            color: var(--text-muted);
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .results-actions {
+            display: none;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .results-actions.active {
+            display: flex;
+        }
+
+        .upload-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 120;
+            backdrop-filter: blur(2px);
+        }
+
+        .upload-overlay.active {
+            display: flex;
+        }
+
+        .upload-card {
+            width: min(420px, 92vw);
+            background: var(--surface);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .upload-gif,
+        .success-gif {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 14px;
+            border-radius: 50%;
+            border: 4px solid #dbeafe;
+            border-top-color: #2563eb;
+            animation: spinUpload 0.8s linear infinite;
+        }
+
+        .success-gif {
+            border: 4px solid #bbf7d0;
+            background: #ecfdf3;
+            position: relative;
+            animation: popIn 0.35s ease;
+        }
+
+        .success-gif::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 17px;
+            width: 24px;
+            height: 14px;
+            border-left: 4px solid #15803d;
+            border-bottom: 4px solid #15803d;
+            transform: rotate(-45deg);
+        }
+
+        @keyframes spinUpload {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.72); opacity: 0.5; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 130;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-backdrop.show {
+            display: flex;
+        }
+
+        .modal-card {
+            width: min(500px, 94vw);
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            padding: 20px;
+        }
+
+        .modal-card h3 {
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .modal-card p {
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .voice-vault {
+            margin-top: 12px;
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .voice-vault h3 {
+            font-size: 0.95em;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .voice-item {
+            display: grid;
+            grid-template-columns: minmax(120px, 1fr) auto auto auto;
+            gap: 8px;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fff;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .voice-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .voice-name {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.88em;
+            width: 100%;
+        }
+
+        .tiny-btn {
+            min-width: 74px;
+            flex: 0 0 auto;
+            padding: 8px 10px;
+            border-radius: 6px;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.82em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top-row">
+                <div class="user-menu">
+                    <div class="user-badge" id="headerUserBadge" title="Active user">
+                        <img class="user-avatar" id="headerUserAvatar" alt="User avatar" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMTQiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSIxNCIgeT0iMTgiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0NzU1NjkiPvCfkbY8L3RleHQ+PC9zdmc+">
+                        <span class="user-name" id="headerUserName">User</span>
+                    </div>
+                    <a href="/dashboard" class="dashboard-return">Dashboard</a>
+                </div>
+            </div>
+            <h1>DocVoice Pro</h1>
+            <p>Real-time speech-to-text reading assistant with sequential word matching</p>
+        </div>
+
+        <!-- Browser Warning -->
+        <div class="browser-warning">
+            <strong>Browser Support:</strong> This app uses your browser's Speech Recognition API.
+            Works best on Chrome, Edge, Safari. Firefox has limited support.
+        </div>
+
+        <div class="session-banner" id="sessionBanner">
+            <span id="sessionBannerText">Previous reading session found.</span>
+            <div class="session-actions">
+                <button class="btn-secondary" onclick="restoreSavedSession()">Restore</button>
+                <button class="btn-secondary" onclick="clearSavedSession()">Dismiss</button>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid" id="uploadSection">
+            <div class="card">
+                <h2>Step 1: Upload PDF</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">PDF</div>
+                    <div class="upload-text">Drag & drop your PDF here<br>or click to select</div>
+                    <input type="file" id="pdfInput" accept=".pdf" />
+                </div>
+                <div class="file-info" id="fileInfo">
+                    <p id="fileName"></p>
+                    <p id="pageCount"></p>
+                    <p id="loadStatus">PDF loaded successfully</p>
+                </div>
+
+                <div class="aux-panel">
+                    <h3>Custom Vocabulary</h3>
+                    <div class="vocab-controls">
+                        <input type="file" id="vocabFileInput" accept=".txt,.csv" />
+                        <button class="btn-secondary" onclick="applyVocabularyFile()">Load Terms</button>
+                    </div>
+                    <div class="small-note" id="vocabStatus">No custom vocabulary loaded.</div>
+                </div>
+
+                <div class="aux-panel">
+                    <h3>Mic Calibration</h3>
+                    <div class="vocab-controls">
+                        <button class="btn-secondary" id="calibrateBtn" onclick="startCalibration()">Calibrate 25s</button>
+                    </div>
+                    <div class="small-note" id="calibrationStatus">Calibration not started.</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>How It Works</h2>
+                <ul class="feature-list">
+                    <li>Upload a PDF file (text-based)</li>
+                    <li>System transcribes speech continuously</li>
+                    <li>Sequential matching supports skip windows (2-3 words)</li>
+                    <li>Correct words turn green, mismatches turn red without blocking</li>
+                    <li>Reading view auto-scrolls after every 2 sentences</li>
+                    <li>Designed for low-latency feedback</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card reader-section" id="readerSection">
+            <h2>Step 2: Read and Speak</h2>
+
+            <div class="reader-config">
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="lineCountSelect">Lines on Screen</label>
+                        <select id="lineCountSelect" class="mini-select" onchange="setVisibleLines(this.value)">
+                            <option value="4">4 lines</option>
+                            <option value="6" selected>6 lines</option>
+                            <option value="8">8 lines</option>
+                            <option value="all">All lines</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label for="accentSelect">Accent / Slang</label>
+                        <select id="accentSelect" class="mini-select" onchange="setAccent(this.value)">
+                            <option value="en-US" selected>English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="en-IN">English (India)</option>
+                            <option value="en-AU">English (Australia)</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label>Reader Font Size</label>
+                        <div class="font-tools">
+                            <button type="button" class="font-btn" onclick="changeReaderFont(-1)">−</button>
+                            <button type="button" class="font-btn" onclick="changeReaderFont(1)">+</button>
+                            <span class="font-size-label" id="fontSizeLabel">100%</span>
+                        </div>
+                    </div>
+                    <div class="config-item">
+                        <label>Session Flow</label>
+                        <div class="small-note">After upload, you move directly into reading mode.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="no-speech-support" id="noSpeechSupport">
+                Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.
+            </div>
+
+            <div class="page-indicator" id="pageIndicator"></div>
+
+            <div class="meta-row">
+                <div class="mode-badge" id="sttModeBadge">Mode: Detecting...</div>
+                <div class="latency-badge" id="latencyBadge">Latency: -- ms</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="coach-panel" id="coachPanel">
+                <div class="analytics-title">Coach Trends (Session History)</div>
+                <div class="coach-list" id="coachList"></div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Pages Completed</div>
+                    <div class="stat-value" id="completedCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Accuracy</div>
+                    <div class="stat-value" id="successRate">0%</div>
+                </div>
+            </div>
+
+            <div class="page-content" id="pageContent"></div>
+
+            <div class="analytics-panel" id="analyticsPanel">
+                <div class="analytics-title">Sentence Analytics</div>
+                <div class="analytics-summary">
+                    <div class="analytics-chip">
+                        <div class="analytics-chip-label">Current Sentence</div>
+                        <div class="analytics-chip-value" id="analyticsCurrentSentence">1 / 1</div>
+                    </div>
+                    <div class="analytics-chip">
+                        <div class="analytics-chip-label">Current Accuracy</div>
+                        <div class="analytics-chip-value" id="analyticsCurrentAccuracy">0%</div>
+                    </div>
+                    <div class="analytics-chip">
+                        <div class="analytics-chip-label">Current Retries</div>
+                        <div class="analytics-chip-value" id="analyticsCurrentRetries">0</div>
+                    </div>
+                </div>
+                <div class="analytics-list" id="sentenceAnalyticsBody"></div>
+                <div class="analytics-title" style="margin-top: 10px;">Hardest Words Heatmap</div>
+                <div class="heatmap-list" id="hardestWordsHeatmap"></div>
+            </div>
+
+            <div class="results-actions" id="resultsActions">
+                <button class="btn-secondary" type="button" onclick="toggleResultsPanel()" id="toggleResultsBtn">Show Results</button>
+                <button class="btn-primary" type="button" onclick="downloadResultsReport()">Download Results</button>
+            </div>
+
+            <div class="controls-dock">
+                <div class="recording-indicator" id="recordingIndicator">
+                    <div class="recording-dot"></div>
+                    <span>Recording... Speak now...</span>
+                </div>
+
+                <div class="recording-status stopped" id="recordingStatus">Status: Stopped</div>
+
+                <div class="controls">
+                    <button class="btn-primary" id="recordBtn" onclick="startRecording()">Start Recording</button>
+                    <button class="btn-secondary" id="pauseBtn" onclick="pauseRecording()" style="display:none;">Pause</button>
+                    <button class="btn-secondary" id="resumeBtn" onclick="resumeRecording()" style="display:none;">Resume</button>
+                    <button class="btn-secondary" id="nextBtn" onclick="manualNext()" style="display:none;">Skip to Next</button>
+                    <button class="btn-secondary" id="resetBtn" onclick="resetReader()">Reset</button>
+                </div>
+
+                <div class="voice-vault">
+                    <h3>Voice Clips (Temporary for 1 hour)</h3>
+                    <div class="small-note">Clips auto-delete after one hour. Rename and download to keep them personally.</div>
+                    <div id="voiceVaultList" class="small-note" style="margin-top:8px;">No voice clips saved yet.</div>
+                </div>
+            </div>
+
+            <div class="response-box" id="responseBox">
+                <div class="response-content" id="responseContent"></div>
+            </div>
+
+            <div class="transcribed-text" id="transcribedText" style="display:none;">
+                <strong>What you said:</strong> <span id="transcribedContent"></span>
+            </div>
+
+            <div class="support-text">
+                <p><strong>Tip:</strong> Speak clearly and naturally. Wrong words are marked but progress continues with skip support.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="upload-overlay" id="uploadOverlay">
+        <div class="upload-card">
+            <div class="upload-gif" id="uploadGif"></div>
+            <div class="success-gif" id="successGif" style="display:none;"></div>
+            <h3 id="uploadOverlayTitle">Uploading PDF...</h3>
+            <p id="uploadOverlayText" class="small-note" style="margin-top:8px;">Please wait while we process your document.</p>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="decisionModal">
+        <div class="modal-card">
+            <h3 id="decisionModalTitle">Continue reading?</h3>
+            <p id="decisionModalText">A previous reading point was found.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="decisionSecondaryBtn" type="button">Start New</button>
+                <button class="btn-primary" id="decisionPrimaryBtn" type="button">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = `${window.location.origin}/api`;
+        let recognition = null;
+        let isRecording = false;
+        let currentPageIndex = 0;
+        let totalPages = 0;
+        let completedPages = 0;
+        let successCount = 0;
+        let currentPageContent = '';
+        let pageLines = [];
+        let pdfWords = [];
+        let lineWordRanges = [];
+        let sentenceWordRanges = [];
+        let currentWordIndex = 0;
+        let currentSentenceIndex = 0;
+        let totalSentenceCount = 0;
+        let totalAttemptedWords = 0;
+        let totalCorrectWords = 0;
+        let totalIncorrectWords = 0;
+        let accuracyPercent = 0;
+        let stableTranscript = '';
+        let liveTranscript = '';
+        let lastAutoScrollBlock = -1;
+        let pageCompletionHandled = false;
+        let localSttAvailable = false;
+        let sttMode = 'browser';
+        let mediaRecorder = null;
+        let mediaStream = null;
+        let audioChunkQueue = [];
+        let isProcessingAudioChunk = false;
+        let whisperTranscript = '';
+        let isPaused = false;
+        let currentPdfFileName = '';
+        let sentenceAttemptCounts = [];
+        let lastProcessedTranscriptFingerprint = '';
+        let currentConfidenceScore = 1;
+        let dynamicSkipWindow = 2;
+        let speechWordsPerSecond = 0;
+        let recentErrorRate = 0;
+        let lastSpeechSampleWordCount = 0;
+        let lastSpeechSampleTimestamp = 0;
+        let lastMatchMetrics = { correct: 0, incorrect: 0, attempted: 0 };
+        let sentenceActiveMs = [];
+        let lastTranscriptUpdateTimestamp = 0;
+        let customVocabularySet = new Set();
+        let wordErrorMap = {};
+        let sttLatencyMs = null;
+        let calibrationProfile = null;
+        let visibleLinesSetting = 6;
+        let readerFontScale = 1;
+        let resultsVisible = false;
+        let finalSessionReady = false;
+        let currentPdfId = '';
+        let activeRecordingChunks = [];
+        let activeRecordingStartedAt = 0;
+        let archiveRecorder = null;
+        let archiveStream = null;
+        let pendingModalPrimaryAction = null;
+        let pendingModalSecondaryAction = null;
+        let activeVaultAudio = null;
+        let activeVaultClipId = '';
+        const SESSION_HISTORY_KEY = 'pdf-speech-reader-history-v1';
+        const ROLE_STORAGE_KEY = 'pdf-speech-reader-role-v1';
+        const SESSION_STORAGE_KEY = 'pdf-speech-reader-session-v1';
+        const VOICE_VAULT_DB = 'docvoice-voice-vault-v1';
+        const VOICE_VAULT_STORE = 'clips';
+        const TEMP_CLIP_TTL_MS = 60 * 60 * 1000;
+        const LOW_SIGNAL_WORDS = new Set([
+            'the', 'a', 'an', 'and', 'or', 'but', 'if', 'to', 'of', 'in', 'on', 'for', 'at', 'by', 'with',
+            'is', 'are', 'was', 'were', 'be', 'been', 'it', 'this', 'that', 'as', 'from', 'into', 'than'
+        ]);
+
+        // Initialize Web Speech API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        function setRecordingUiState(active, label) {
+            const recordButton = document.getElementById('recordBtn');
+            const pageContentElement = document.getElementById('pageContent');
+            const recordingIndicator = document.getElementById('recordingIndicator');
+            const recordingStatus = document.getElementById('recordingStatus');
+
+            isRecording = active;
+            recordButton.textContent = label;
+            recordingIndicator.classList.toggle('active', active);
+            pageContentElement.style.background = active ? '#eef6ff' : '#f8fafc';
+
+            if (recordingStatus) {
+                if (active) {
+                    recordingStatus.className = 'recording-status recording';
+                    recordingStatus.textContent = 'Status: Recording';
+                } else if (isPaused) {
+                    recordingStatus.className = 'recording-status paused';
+                    recordingStatus.textContent = 'Status: Paused';
+                } else {
+                    recordingStatus.className = 'recording-status stopped';
+                    recordingStatus.textContent = 'Status: Stopped';
+                }
+            }
+        }
+
+        function updateRecordingControls() {
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resumeBtn = document.getElementById('resumeBtn');
+            const recordBtn = document.getElementById('recordBtn');
+
+            if (!pauseBtn || !resumeBtn || !recordBtn) {
+                return;
+            }
+
+            if (isRecording) {
+                pauseBtn.style.display = 'flex';
+                resumeBtn.style.display = 'none';
+                recordBtn.textContent = 'Stop Recording';
+            } else if (isPaused) {
+                pauseBtn.style.display = 'none';
+                resumeBtn.style.display = 'flex';
+                recordBtn.textContent = 'Stop Recording';
+            } else {
+                pauseBtn.style.display = 'none';
+                resumeBtn.style.display = 'none';
+                recordBtn.textContent = 'Start Recording';
+            }
+        }
+
+        function getTranscriptFingerprint(transcriptText) {
+            return normalizeTextToWords(String(transcriptText || '')).join(' ');
+        }
+
+        function updateSttModeBadge() {
+            const badge = document.getElementById('sttModeBadge');
+            if (!badge) return;
+
+            if (sttMode === 'local-whisper') {
+                badge.textContent = 'Mode: Local Whisper';
+            } else if (sttMode === 'browser') {
+                badge.textContent = 'Mode: Browser STT (Offline-first)';
+            } else {
+                badge.textContent = 'Mode: STT unavailable';
+            }
+        }
+
+        function updateLatencyBadge(latencyValueMs = null) {
+            const badge = document.getElementById('latencyBadge');
+            if (!badge) return;
+
+            sttLatencyMs = typeof latencyValueMs === 'number' ? Math.max(0, Math.round(latencyValueMs)) : sttLatencyMs;
+            if (typeof sttLatencyMs === 'number') {
+                badge.textContent = `Latency: ${sttLatencyMs} ms`;
+            } else {
+                badge.textContent = 'Latency: -- ms';
+            }
+        }
+
+        function openDecisionModal({ title, message, primaryText, secondaryText, onPrimary, onSecondary }) {
+            const modal = document.getElementById('decisionModal');
+            if (!modal) return;
+
+            document.getElementById('decisionModalTitle').textContent = title;
+            document.getElementById('decisionModalText').textContent = message;
+            document.getElementById('decisionPrimaryBtn').textContent = primaryText;
+            document.getElementById('decisionSecondaryBtn').textContent = secondaryText;
+
+            pendingModalPrimaryAction = typeof onPrimary === 'function' ? onPrimary : null;
+            pendingModalSecondaryAction = typeof onSecondary === 'function' ? onSecondary : null;
+            modal.classList.add('show');
+        }
+
+        function closeDecisionModal() {
+            const modal = document.getElementById('decisionModal');
+            if (!modal) return;
+            modal.classList.remove('show');
+            pendingModalPrimaryAction = null;
+            pendingModalSecondaryAction = null;
+        }
+
+        function setUploadOverlayState(mode = 'uploading', title = 'Uploading PDF...', text = 'Please wait while we process your document.') {
+            const overlay = document.getElementById('uploadOverlay');
+            if (!overlay) return;
+            const uploadGif = document.getElementById('uploadGif');
+            const successGif = document.getElementById('successGif');
+            const titleEl = document.getElementById('uploadOverlayTitle');
+            const textEl = document.getElementById('uploadOverlayText');
+
+            overlay.classList.add('active');
+            titleEl.textContent = title;
+            textEl.textContent = text;
+
+            if (mode === 'success') {
+                uploadGif.style.display = 'none';
+                successGif.style.display = 'block';
+            } else {
+                uploadGif.style.display = 'block';
+                successGif.style.display = 'none';
+            }
+        }
+
+        function hideUploadOverlay(delayMs = 0) {
+            const overlay = document.getElementById('uploadOverlay');
+            if (!overlay) return;
+            window.setTimeout(() => overlay.classList.remove('active'), Math.max(0, delayMs));
+        }
+
+        function setVisibleLines(value) {
+            visibleLinesSetting = value === 'all' ? 'all' : Math.max(2, Number(value || 6));
+            applyVisibleLinesWindow();
+        }
+
+        function applyVisibleLinesWindow() {
+            if (!Array.isArray(lineWordRanges) || lineWordRanges.length === 0) {
+                return;
+            }
+
+            let focusedLine = 0;
+            if (currentWordIndex < pdfWords.length && pdfWords[currentWordIndex]) {
+                focusedLine = pdfWords[currentWordIndex].lineIndex;
+            } else if (pageLines.length > 0) {
+                focusedLine = pageLines.length - 1;
+            }
+
+            const allVisible = visibleLinesSetting === 'all';
+            const halfWindow = allVisible ? 0 : Math.floor(Number(visibleLinesSetting) / 2);
+
+            for (let lineIdx = 0; lineIdx < lineWordRanges.length; lineIdx++) {
+                const lineEl = document.getElementById(`line-${lineIdx}`);
+                if (!lineEl) continue;
+                const shouldShow = allVisible || (lineIdx >= focusedLine - halfWindow && lineIdx <= focusedLine + halfWindow);
+                lineEl.classList.toggle('hidden-line', !shouldShow);
+            }
+        }
+
+        function setAccent(langCode, silent = false) {
+            if (recognition) {
+                recognition.lang = langCode || 'en-US';
+            }
+            if (!silent) {
+                showResponse('info', 'Accent Updated', `Speech accent set to ${langCode || 'en-US'}.`);
+            }
+        }
+
+        function changeReaderFont(step) {
+            const delta = Number(step || 0) * 0.08;
+            readerFontScale = Math.max(0.8, Math.min(1.5, readerFontScale + delta));
+            const contentEl = document.getElementById('pageContent');
+            const labelEl = document.getElementById('fontSizeLabel');
+            if (contentEl) {
+                contentEl.style.fontSize = `${(1.16 * readerFontScale).toFixed(2)}rem`;
+            }
+            if (labelEl) {
+                labelEl.textContent = `${Math.round(readerFontScale * 100)}%`;
+            }
+        }
+
+        function setResultsActionVisibility(show) {
+            const actions = document.getElementById('resultsActions');
+            if (!actions) return;
+            actions.classList.toggle('active', Boolean(show));
+        }
+
+        function toggleResultsPanel() {
+            const analytics = document.getElementById('analyticsPanel');
+            const toggleBtn = document.getElementById('toggleResultsBtn');
+            if (!analytics || !toggleBtn) return;
+
+            resultsVisible = !resultsVisible;
+            analytics.style.display = resultsVisible ? 'block' : 'none';
+            toggleBtn.textContent = resultsVisible ? 'Hide Results' : 'Show Results';
+        }
+
+        function buildResultsPayload() {
+            return {
+                fileName: currentPdfFileName || 'unknown.pdf',
+                completedPages,
+                totalPages,
+                accuracyPercent,
+                estimatedWpm: getEstimatedWpm(),
+                completedAt: new Date().toISOString(),
+                hardestWords: Object.entries(wordErrorMap || {}).sort((a, b) => b[1] - a[1]).slice(0, 12),
+                sentenceRetries: sentenceAttemptCounts,
+                sentenceActiveMs
+            };
+        }
+
+        function downloadResultsReport() {
+            const payload = buildResultsPayload();
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.href = url;
+            link.download = `docvoice-results-${stamp}.json`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+            showResponse('success', 'Results Downloaded', 'Your reading results report has been downloaded.');
+        }
+
+        function openVoiceVaultDb() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(VOICE_VAULT_DB, 1);
+                request.onupgradeneeded = () => {
+                    const db = request.result;
+                    if (!db.objectStoreNames.contains(VOICE_VAULT_STORE)) {
+                        db.createObjectStore(VOICE_VAULT_STORE, { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error || new Error('Failed to open voice vault DB'));
+            });
+        }
+
+        async function cleanupExpiredVoiceClips() {
+            const db = await openVoiceVaultDb();
+            const tx = db.transaction(VOICE_VAULT_STORE, 'readwrite');
+            const store = tx.objectStore(VOICE_VAULT_STORE);
+            const now = Date.now();
+
+            await new Promise((resolve) => {
+                const cursorReq = store.openCursor();
+                cursorReq.onsuccess = () => {
+                    const cursor = cursorReq.result;
+                    if (!cursor) {
+                        resolve();
+                        return;
+                    }
+                    const value = cursor.value;
+                    if (!value || now - Number(value.createdAt || now) > TEMP_CLIP_TTL_MS) {
+                        cursor.delete();
+                    }
+                    cursor.continue();
+                };
+                cursorReq.onerror = () => resolve();
+            });
+
+            db.close();
+        }
+
+        async function listVoiceClips() {
+            const db = await openVoiceVaultDb();
+            const tx = db.transaction(VOICE_VAULT_STORE, 'readonly');
+            const store = tx.objectStore(VOICE_VAULT_STORE);
+            const allReq = store.getAll();
+            const clips = await new Promise((resolve) => {
+                allReq.onsuccess = () => resolve(Array.isArray(allReq.result) ? allReq.result : []);
+                allReq.onerror = () => resolve([]);
+            });
+            db.close();
+            return clips.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+        }
+
+        async function saveVoiceClip(clipBlob, preferredName = '') {
+            if (!clipBlob || !clipBlob.size) {
+                return;
+            }
+            const db = await openVoiceVaultDb();
+            const tx = db.transaction(VOICE_VAULT_STORE, 'readwrite');
+            const store = tx.objectStore(VOICE_VAULT_STORE);
+            const id = `clip-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            const createdAt = Date.now();
+            const clipName = preferredName || `Reading Clip ${new Date(createdAt).toLocaleTimeString()}`;
+            store.put({
+                id,
+                name: clipName,
+                createdAt,
+                mimeType: clipBlob.type || 'audio/webm',
+                blob: clipBlob
+            });
+            await new Promise((resolve) => {
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            });
+            db.close();
+
+            const durationSec = Math.max(1, Math.round(clipBlob.size / 16000));
+            await syncVoiceClipToServer({
+                id,
+                pdfId: currentPdfId || localStorage.getItem('currentPdfId') || 'unassigned',
+                fileName: clipName,
+                filePath: '',
+                duration: durationSec,
+                recordedContent: (whisperTranscript || `${stableTranscript} ${liveTranscript}`.trim() || '').slice(0, 5000),
+                accuracy: Number(accuracyPercent || 0)
+            });
+        }
+
+        async function renameVoiceClip(clipId, nextName) {
+            const safeName = String(nextName || '').trim();
+            if (!clipId || !safeName) return;
+            const db = await openVoiceVaultDb();
+            const tx = db.transaction(VOICE_VAULT_STORE, 'readwrite');
+            const store = tx.objectStore(VOICE_VAULT_STORE);
+            const getReq = store.get(clipId);
+            await new Promise((resolve) => {
+                getReq.onsuccess = () => {
+                    const clip = getReq.result;
+                    if (clip) {
+                        clip.name = safeName;
+                        store.put(clip);
+                    }
+                    resolve();
+                };
+                getReq.onerror = () => resolve();
+            });
+            db.close();
+
+            try {
+                await fetch(`${API_URL}/voice-clips/${encodeURIComponent(clipId)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fileName: safeName })
+                });
+            } catch (error) {
+            }
+        }
+
+        async function deleteVoiceClip(clipId) {
+            const db = await openVoiceVaultDb();
+            const tx = db.transaction(VOICE_VAULT_STORE, 'readwrite');
+            tx.objectStore(VOICE_VAULT_STORE).delete(clipId);
+            await new Promise((resolve) => {
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            });
+            db.close();
+
+            try {
+                await fetch(`${API_URL}/voice-clips/${encodeURIComponent(clipId)}`, {
+                    method: 'DELETE'
+                });
+            } catch (error) {
+            }
+        }
+
+        async function downloadVoiceClip(clipId) {
+            const db = await openVoiceVaultDb();
+            const tx = db.transaction(VOICE_VAULT_STORE, 'readonly');
+            const store = tx.objectStore(VOICE_VAULT_STORE);
+            const getReq = store.get(clipId);
+            const clip = await new Promise((resolve) => {
+                getReq.onsuccess = () => resolve(getReq.result || null);
+                getReq.onerror = () => resolve(null);
+            });
+            db.close();
+            if (!clip || !clip.blob) return;
+
+            const url = URL.createObjectURL(clip.blob);
+            const link = document.createElement('a');
+            const extension = clip.mimeType && clip.mimeType.includes('ogg') ? 'ogg' : 'webm';
+            link.href = url;
+            link.download = `${String(clip.name || 'voice-clip').replace(/[^a-z0-9-_ ]/gi, '').trim() || 'voice-clip'}.${extension}`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function resetVaultPlayButtons() {
+            document.querySelectorAll('[id^="voice-play-"]').forEach((btn) => {
+                btn.textContent = 'Play';
+            });
+        }
+
+        function stopVaultClipPlayback() {
+            if (activeVaultAudio) {
+                activeVaultAudio.pause();
+                activeVaultAudio.currentTime = 0;
+                activeVaultAudio = null;
+            }
+            activeVaultClipId = '';
+            resetVaultPlayButtons();
+        }
+
+        async function playVaultClip(clipId) {
+            const db = await openVoiceVaultDb();
+            const tx = db.transaction(VOICE_VAULT_STORE, 'readonly');
+            const store = tx.objectStore(VOICE_VAULT_STORE);
+            const getReq = store.get(clipId);
+            const clip = await new Promise((resolve) => {
+                getReq.onsuccess = () => resolve(getReq.result || null);
+                getReq.onerror = () => resolve(null);
+            });
+            db.close();
+
+            if (!clip || !clip.blob) {
+                showResponse('error', 'Playback Error', 'Audio clip is not available.');
+                return;
+            }
+
+            if (activeVaultClipId === clipId && activeVaultAudio) {
+                stopVaultClipPlayback();
+                return;
+            }
+
+            stopVaultClipPlayback();
+
+            const url = URL.createObjectURL(clip.blob);
+            const audio = new Audio(url);
+            activeVaultAudio = audio;
+            activeVaultClipId = clipId;
+
+            const playBtn = document.getElementById(`voice-play-${clipId}`);
+            if (playBtn) {
+                playBtn.textContent = 'Stop';
+            }
+
+            audio.addEventListener('ended', () => {
+                URL.revokeObjectURL(url);
+                stopVaultClipPlayback();
+            }, { once: true });
+
+            audio.addEventListener('error', () => {
+                URL.revokeObjectURL(url);
+                stopVaultClipPlayback();
+                showResponse('error', 'Playback Error', 'Unable to play this clip.');
+            }, { once: true });
+
+            try {
+                await audio.play();
+            } catch (error) {
+                URL.revokeObjectURL(url);
+                stopVaultClipPlayback();
+                showResponse('error', 'Playback Blocked', 'Browser blocked autoplay. Click Play again to allow audio.');
+            }
+        }
+
+        async function renderVoiceVault() {
+            const target = document.getElementById('voiceVaultList');
+            if (!target) return;
+
+            await cleanupExpiredVoiceClips();
+            const clips = await listVoiceClips();
+            if (!clips.length) {
+                target.className = 'small-note';
+                target.textContent = 'No voice clips saved yet.';
+                return;
+            }
+
+            target.className = '';
+            target.innerHTML = clips.map((clip) => {
+                const minsLeft = Math.max(0, Math.ceil((TEMP_CLIP_TTL_MS - (Date.now() - Number(clip.createdAt || 0))) / 60000));
+                return `<div class="voice-item">
+                    <input class="voice-name" id="voice-name-${clip.id}" value="${escapeHtml(String(clip.name || 'Voice Clip'))}" />
+                    <button class="btn-secondary tiny-btn" type="button" id="voice-play-${clip.id}" onclick="playVaultClip('${clip.id}')">Play</button>
+                    <button class="btn-secondary tiny-btn" type="button" onclick="renameVoiceClipFromUi('${clip.id}')">Rename</button>
+                    <button class="btn-primary tiny-btn" type="button" onclick="downloadVoiceClip('${clip.id}')">Download</button>
+                    <button class="btn-secondary tiny-btn" type="button" onclick="deleteVoiceClipFromUi('${clip.id}')">Delete (${minsLeft}m)</button>
+                </div>`;
+            }).join('');
+        }
+
+        async function renameVoiceClipFromUi(clipId) {
+            const input = document.getElementById(`voice-name-${clipId}`);
+            await renameVoiceClip(clipId, input ? input.value : 'Voice Clip');
+            showResponse('success', 'Clip Renamed', 'Voice clip name updated.');
+            renderVoiceVault();
+        }
+
+        async function deleteVoiceClipFromUi(clipId) {
+            if (activeVaultClipId === clipId) {
+                stopVaultClipPlayback();
+            }
+            await deleteVoiceClip(clipId);
+            showResponse('info', 'Clip Deleted', 'Voice clip removed from temporary storage.');
+            renderVoiceVault();
+        }
+
+        function beginClipCapture() {
+            activeRecordingChunks = [];
+            activeRecordingStartedAt = Date.now();
+        }
+
+        async function finalizeClipCapture() {
+            const elapsed = Date.now() - Number(activeRecordingStartedAt || 0);
+            if (!activeRecordingChunks.length || elapsed < 1200) {
+                activeRecordingChunks = [];
+                activeRecordingStartedAt = 0;
+                return;
+            }
+
+            const blob = new Blob(activeRecordingChunks, { type: activeRecordingChunks[0].type || 'audio/webm' });
+            activeRecordingChunks = [];
+            activeRecordingStartedAt = 0;
+            await saveVoiceClip(blob, `Reading Clip ${new Date().toLocaleTimeString()}`);
+            await renderVoiceVault();
+            showResponse('info', 'Voice Clip Saved', 'Temporary clip saved for 1 hour. Rename or download it anytime.');
+        }
+
+        async function startArchiveRecorderForBrowserMode() {
+            if (!(navigator.mediaDevices && window.MediaRecorder)) {
+                return;
+            }
+
+            const mimeType = getSupportedAudioMimeType();
+            archiveStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            archiveRecorder = mimeType
+                ? new MediaRecorder(archiveStream, { mimeType, audioBitsPerSecond: 64000 })
+                : new MediaRecorder(archiveStream);
+
+            beginClipCapture();
+            archiveRecorder.addEventListener('dataavailable', (event) => {
+                if (event.data && event.data.size > 0) {
+                    activeRecordingChunks.push(event.data);
+                }
+            });
+
+            archiveRecorder.addEventListener('stop', async () => {
+                if (archiveStream) {
+                    archiveStream.getTracks().forEach((track) => track.stop());
+                }
+                archiveStream = null;
+                archiveRecorder = null;
+                await finalizeClipCapture();
+            }, { once: true });
+
+            archiveRecorder.start(900);
+        }
+
+        function stopArchiveRecorderForBrowserMode() {
+            if (archiveRecorder && archiveRecorder.state !== 'inactive') {
+                archiveRecorder.stop();
+            }
+        }
+
+        function clampValue(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function updateAdaptiveSkipWindow() {
+            let nextSkipWindow = 1;
+            if (speechWordsPerSecond > 2.8 || recentErrorRate > 0.35) {
+                nextSkipWindow = 4;
+            } else if (speechWordsPerSecond > 2.2 || recentErrorRate > 0.25) {
+                nextSkipWindow = 3;
+            } else if (speechWordsPerSecond > 1.4 || recentErrorRate > 0.14) {
+                nextSkipWindow = 2;
+            }
+
+            dynamicSkipWindow = clampValue(nextSkipWindow, 1, 4);
+        }
+
+        function updateSpeechMetricsFromFingerprint(fingerprintText) {
+            const now = Date.now();
+            const wordCount = fingerprintText ? fingerprintText.split(' ').filter(Boolean).length : 0;
+
+            if (lastSpeechSampleTimestamp > 0 && now > lastSpeechSampleTimestamp && wordCount >= lastSpeechSampleWordCount) {
+                const elapsedSec = (now - lastSpeechSampleTimestamp) / 1000;
+                const wordDelta = wordCount - lastSpeechSampleWordCount;
+                if (elapsedSec > 0.1 && wordDelta >= 0) {
+                    const instantWps = wordDelta / elapsedSec;
+                    speechWordsPerSecond = speechWordsPerSecond === 0
+                        ? instantWps
+                        : ((speechWordsPerSecond * 0.7) + (instantWps * 0.3));
+                }
+            }
+
+            lastSpeechSampleWordCount = wordCount;
+            lastSpeechSampleTimestamp = now;
+        }
+
+        function getSessionHistory() {
+            try {
+                const raw = localStorage.getItem(SESSION_HISTORY_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return parsed && typeof parsed === 'object' ? parsed : {};
+            } catch (error) {
+                return {};
+            }
+        }
+
+        function saveSessionHistory(historyData) {
+            try {
+                localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(historyData));
+            } catch (error) {
+            }
+        }
+
+        function getEstimatedWpm() {
+            return Math.round(speechWordsPerSecond * 60);
+        }
+
+        async function registerUploadedPdf(fileName, totalPageCount) {
+            currentPdfId = `pdf-${Date.now()}`;
+            localStorage.setItem('currentPdfId', currentPdfId);
+
+            try {
+                await fetch(`${API_URL}/pdfs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: currentPdfId,
+                        fileName,
+                        filePath: '',
+                        totalPages: totalPageCount,
+                        topics: []
+                    })
+                });
+            } catch (error) {
+            }
+        }
+
+        async function syncPdfProgressToServer() {
+            if (!currentPdfId || !totalPages) return;
+
+            const progress = Math.max(0, Math.min(100, Math.round(((currentPageIndex + 1) / totalPages) * 100)));
+            try {
+                await fetch(`${API_URL}/pdfs/${encodeURIComponent(currentPdfId)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ progress })
+                });
+            } catch (error) {
+            }
+        }
+
+        async function syncVoiceClipToServer(clipPayload) {
+            try {
+                await fetch(`${API_URL}/voice-clips`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(clipPayload)
+                });
+            } catch (error) {
+            }
+        }
+
+        function recordSessionHistoryEvent(eventType = 'progress') {
+            const historyData = getSessionHistory();
+            const pdfKey = currentPdfFileName || 'unknown-pdf';
+            const currentEntries = Array.isArray(historyData[pdfKey]) ? historyData[pdfKey] : [];
+
+            const snapshot = {
+                eventType,
+                timestamp: Date.now(),
+                page: currentPageIndex + 1,
+                totalPages,
+                accuracy: accuracyPercent,
+                retries: sentenceAttemptCounts.reduce((sum, attempts) => sum + Math.max(0, attempts - 1), 0),
+                wpm: getEstimatedWpm()
+            };
+
+            currentEntries.push(snapshot);
+            historyData[pdfKey] = currentEntries.slice(-40);
+            saveSessionHistory(historyData);
+        }
+
+        function renderCoachTrends() {
+            const coachList = document.getElementById('coachList');
+            if (!coachList) return;
+
+            const historyData = getSessionHistory();
+            const pdfKey = currentPdfFileName || 'unknown-pdf';
+            const entries = Array.isArray(historyData[pdfKey]) ? historyData[pdfKey] : [];
+
+            if (entries.length === 0) {
+                coachList.innerHTML = '<div class="coach-row"><span>No history</span><span>-</span><span>-</span><span>Upload and read to build trends</span></div>';
+                return;
+            }
+
+            let html = '<div class="coach-row" style="font-weight:700;background:#f8fafc;"><span>Time</span><span>Acc</span><span>WPM</span><span>Progress</span></div>';
+            const recent = entries.slice(-12).reverse();
+            for (let idx = 0; idx < recent.length; idx++) {
+                const item = recent[idx];
+                const timeLabel = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                html += `<div class="coach-row"><span>${timeLabel}</span><span>${item.accuracy || 0}%</span><span>${item.wpm || 0}</span><span>P${item.page}/${item.totalPages} (${item.eventType})</span></div>`;
+            }
+
+            coachList.innerHTML = html;
+        }
+
+        function setRoleView(roleName) {
+            const nextRole = roleName === 'coach' ? 'coach' : 'learner';
+            try {
+                localStorage.setItem(ROLE_STORAGE_KEY, nextRole);
+            } catch (error) {
+            }
+
+            const coachPanel = document.getElementById('coachPanel');
+            if (coachPanel) {
+                coachPanel.classList.toggle('active', nextRole === 'coach');
+            }
+
+            function setHeaderUserBadge(user) {
+                const avatar = document.getElementById('headerUserAvatar');
+                const name = document.getElementById('headerUserName');
+                const fullName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || 'User';
+
+                if (name) {
+                    name.textContent = fullName;
+                }
+
+                if (avatar) {
+                    avatar.src = user?.picture || avatar.src;
+                }
+            }
+
+            async function loadHeaderUserBadge() {
+                try {
+                    const profileRes = await fetch(`${API_URL}/user/profile`);
+                    if (profileRes.ok) {
+                        const profileData = await profileRes.json();
+                        if (profileData?.profile) {
+                            setHeaderUserBadge(profileData.profile);
+                            return;
+                        }
+                    }
+                } catch (error) {
+                }
+
+                try {
+                    const sessionRes = await fetch(`${API_URL}/auth/session`);
+                    if (sessionRes.ok) {
+                        const sessionData = await sessionRes.json();
+                        if (sessionData?.authenticated && sessionData?.user) {
+                            setHeaderUserBadge(sessionData.user);
+                            return;
+                        }
+                    }
+                } catch (error) {
+                }
+
+                try {
+                    const stored = localStorage.getItem('userSession');
+                    if (stored) {
+                        setHeaderUserBadge(JSON.parse(stored));
+                    }
+                } catch (error) {
+                }
+            }
+
+            const roleSelect = document.getElementById('roleSelect');
+            if (roleSelect && roleSelect.value !== nextRole) {
+                roleSelect.value = nextRole;
+            }
+
+            if (nextRole === 'coach') {
+                renderCoachTrends();
+            }
+        }
+
+        async function startCalibration() {
+            const statusEl = document.getElementById('calibrationStatus');
+            const buttonEl = document.getElementById('calibrateBtn');
+            if (!statusEl || !buttonEl) return;
+
+            buttonEl.disabled = true;
+            statusEl.textContent = 'Calibration started (25s)... keep quiet then speak naturally.';
+
+            let stream = null;
+            let audioContext = null;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+
+                analyser.fftSize = 2048;
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                const startedAt = Date.now();
+                let samples = 0;
+                let avgEnergy = 0;
+                let peakEnergy = 0;
+
+                await new Promise((resolve) => {
+                    const timer = setInterval(() => {
+                        analyser.getByteFrequencyData(dataArray);
+                        let frameEnergy = 0;
+                        for (let i = 0; i < dataArray.length; i++) {
+                            frameEnergy += dataArray[i];
+                        }
+                        frameEnergy = frameEnergy / dataArray.length;
+                        avgEnergy += frameEnergy;
+                        peakEnergy = Math.max(peakEnergy, frameEnergy);
+                        samples++;
+
+                        const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+                        statusEl.textContent = `Calibrating... ${Math.min(elapsed, 25)}s / 25s`;
+
+                        if (Date.now() - startedAt >= 25000) {
+                            clearInterval(timer);
+                            resolve();
+                        }
+                    }, 250);
+                });
+
+                const noiseAvg = samples > 0 ? (avgEnergy / samples) : 0;
+                calibrationProfile = {
+                    noiseAvg: Math.round(noiseAvg),
+                    noisePeak: Math.round(peakEnergy),
+                    calibratedAt: Date.now()
+                };
+
+                statusEl.textContent = `Calibration complete. Noise avg ${calibrationProfile.noiseAvg}, peak ${calibrationProfile.noisePeak}.`;
+            } catch (error) {
+                statusEl.textContent = `Calibration failed: ${error.message}`;
+            } finally {
+                if (stream) {
+                    stream.getTracks().forEach((track) => track.stop());
+                }
+                if (audioContext) {
+                    audioContext.close();
+                }
+                buttonEl.disabled = false;
+            }
+        }
+
+        function applyVocabularyFile() {
+            const input = document.getElementById('vocabFileInput');
+            const statusEl = document.getElementById('vocabStatus');
+            if (!input || !statusEl || !input.files || input.files.length === 0) {
+                statusEl.textContent = 'Select a .txt or .csv file first.';
+                return;
+            }
+
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                const text = String(reader.result || '');
+                const terms = text
+                    .split(/\r?\n|,|;/)
+                    .map((term) => canonicalizeWord(term))
+                    .filter(Boolean);
+
+                customVocabularySet = new Set(terms);
+                statusEl.textContent = `${customVocabularySet.size} custom term(s) loaded.`;
+            };
+            reader.onerror = () => {
+                statusEl.textContent = 'Failed to parse vocabulary file.';
+            };
+            reader.readAsText(file);
+        }
+
+        function updateHardestWordsHeatmap() {
+            const target = document.getElementById('hardestWordsHeatmap');
+            if (!target) return;
+
+            const entries = Object.entries(wordErrorMap || {})
+                .filter((entry) => entry[1] > 0)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8);
+
+            if (entries.length === 0) {
+                target.innerHTML = '<div class="small-note">No hard words yet.</div>';
+                return;
+            }
+
+            const maxScore = entries[0][1] || 1;
+            target.innerHTML = entries
+                .map(([word, count]) => {
+                    const width = Math.round((count / maxScore) * 100);
+                    return `<div class="heatmap-item"><div><div>${escapeHtml(word)}</div><div class="heatmap-bar" style="width:${width}%"></div></div><strong>${count}</strong></div>`;
+                })
+                .join('');
+        }
+
+        function persistSessionState() {
+            try {
+                const payload = {
+                    fileName: currentPdfFileName,
+                    totalPages,
+                    currentPageIndex,
+                    completedPages,
+                    accuracyPercent,
+                    currentWordIndex,
+                    currentSentenceIndex,
+                    updatedAt: Date.now()
+                };
+                localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(payload));
+            } catch (error) {
+            }
+        }
+
+        function getSavedSession() {
+            try {
+                const rawValue = localStorage.getItem(SESSION_STORAGE_KEY);
+                if (!rawValue) {
+                    return null;
+                }
+
+                const parsed = JSON.parse(rawValue);
+                if (!parsed || typeof parsed !== 'object') {
+                    return null;
+                }
+
+                return parsed;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function clearSavedSession() {
+            localStorage.removeItem(SESSION_STORAGE_KEY);
+            const sessionBanner = document.getElementById('sessionBanner');
+            if (sessionBanner) {
+                sessionBanner.style.display = 'none';
+            }
+        }
+
+        function showSavedSessionBanner() {
+            const savedSession = getSavedSession();
+            if (!savedSession) {
+                return;
+            }
+
+            const ageMinutes = Math.max(0, Math.floor((Date.now() - (savedSession.updatedAt || Date.now())) / 60000));
+            const fileLabel = savedSession.fileName || 'recent PDF';
+            openDecisionModal({
+                title: 'Continue where you left?',
+                message: `Resume ${fileLabel} at page ${Number(savedSession.currentPageIndex || 0) + 1} (${ageMinutes} min ago), or start a new reading session?`,
+                primaryText: 'Continue',
+                secondaryText: 'Start New',
+                onPrimary: () => {
+                    restoreSavedSession();
+                    closeDecisionModal();
+                },
+                onSecondary: async () => {
+                    clearSavedSession();
+                    await fetch(`${API_URL}/reset`, { method: 'POST' });
+                    closeDecisionModal();
+                    showResponse('info', 'New Session', 'Starting a fresh reading session.');
+                }
+            });
+        }
+
+        async function syncServerToPageIndex(targetIndex) {
+            const boundedTarget = Math.max(0, Number(targetIndex || 0));
+
+            const currentResponse = await fetch(`${API_URL}/current-page`);
+            const currentResult = await currentResponse.json();
+            if (!currentResponse.ok || !currentResult.success) {
+                throw new Error('No active PDF on server. Upload the same PDF first, then restore session.');
+            }
+
+            let serverIndex = Number(currentResult.pageIndex || 0);
+            if (boundedTarget < serverIndex) {
+                await fetch(`${API_URL}/reset`, { method: 'POST' });
+                serverIndex = 0;
+            }
+
+            const maxSteps = 500;
+            let steps = 0;
+            while (serverIndex < boundedTarget && steps < maxSteps) {
+                const nextResponse = await fetch(`${API_URL}/next-page`, { method: 'POST' });
+                const nextResult = await nextResponse.json();
+                if (!nextResponse.ok || !nextResult.success) {
+                    break;
+                }
+                serverIndex = Number(nextResult.pageIndex || serverIndex + 1);
+                steps++;
+            }
+        }
+
+        async function restoreSavedSession() {
+            const savedSession = getSavedSession();
+            if (!savedSession) {
+                return;
+            }
+
+            try {
+                await syncServerToPageIndex(savedSession.currentPageIndex || 0);
+                totalPages = Number(savedSession.totalPages || totalPages || 0);
+                completedPages = Number(savedSession.completedPages || 0);
+                accuracyPercent = Number(savedSession.accuracyPercent || 0);
+                currentPageIndex = Number(savedSession.currentPageIndex || 0);
+                currentPdfFileName = savedSession.fileName || currentPdfFileName;
+
+                document.getElementById('readerSection').classList.add('active');
+                if (currentPdfFileName) {
+                    document.getElementById('fileName').textContent = `File: ${currentPdfFileName}`;
+                    document.getElementById('fileInfo').classList.add('show');
+                }
+                if (totalPages > 0) {
+                    document.getElementById('pageCount').textContent = `Total Pages: ${totalPages}`;
+                }
+
+                const uploadSection = document.getElementById('uploadSection');
+                if (uploadSection) {
+                    uploadSection.style.display = 'none';
+                }
+
+                await loadCurrentPage();
+                clearSavedSession();
+                showResponse('success', 'Session Restored', 'Previous reading session restored successfully.');
+            } catch (error) {
+                showResponse('error', 'Restore Failed', error.message);
+            }
+        }
+
+        async function resumeCurrentPdfFromSavedState() {
+            const storedPdfId = localStorage.getItem('currentPdfId');
+            if (!storedPdfId) {
+                return false;
+            }
+
+            try {
+                const metaResponse = await fetch(`${API_URL}/pdfs/${encodeURIComponent(storedPdfId)}`);
+                if (metaResponse.ok) {
+                    const metaData = await metaResponse.json();
+                    if (metaData && metaData.pdf) {
+                        currentPdfFileName = metaData.pdf.fileName || currentPdfFileName;
+                        totalPages = Number(metaData.pdf.totalPages || totalPages || 0);
+                        if (currentPdfFileName) {
+                            document.getElementById('fileName').textContent = `File: ${currentPdfFileName}`;
+                            document.getElementById('fileInfo').classList.add('show');
+                        }
+                        if (totalPages > 0) {
+                            document.getElementById('pageCount').textContent = `Total Pages: ${totalPages}`;
+                        }
+                    }
+                }
+
+                const loaded = await loadCurrentPage();
+                if (!loaded) {
+                    return false;
+                }
+
+                const uploadSection = document.getElementById('uploadSection');
+                const readerSection = document.getElementById('readerSection');
+                if (uploadSection) {
+                    uploadSection.style.display = 'none';
+                }
+                if (readerSection) {
+                    readerSection.classList.add('active');
+                }
+                document.getElementById('readerSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                showResponse('success', 'Session Restored', 'Loaded your last PDF so you can keep reading.');
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function updateSentenceAnalytics() {
+            const analyticsBody = document.getElementById('sentenceAnalyticsBody');
+            const currentSentenceEl = document.getElementById('analyticsCurrentSentence');
+            const currentAccuracyEl = document.getElementById('analyticsCurrentAccuracy');
+            const currentRetriesEl = document.getElementById('analyticsCurrentRetries');
+
+            if (!analyticsBody || !currentSentenceEl || !currentAccuracyEl || !currentRetriesEl) {
+                return;
+            }
+
+            if (sentenceWordRanges.length === 0) {
+                analyticsBody.innerHTML = '<div class="analytics-row"><span>-</span><span>-</span><span>-</span><span>-</span><span>No sentence data</span></div>';
+                currentSentenceEl.textContent = '0 / 0';
+                currentAccuracyEl.textContent = '0%';
+                currentRetriesEl.textContent = '0';
+                return;
+            }
+
+            let rowsHtml = '<div class="analytics-row analytics-header"><span>#</span><span>Acc</span><span>WPM</span><span>Retry</span><span>Status</span><span>Preview</span></div>';
+            let currentSentenceAccuracy = 0;
+            let currentSentenceRetries = 0;
+
+            for (let sentenceIndex = 0; sentenceIndex < sentenceWordRanges.length; sentenceIndex++) {
+                const range = sentenceWordRanges[sentenceIndex];
+                const totalWords = Math.max(0, range.endIndex - range.startIndex + 1);
+
+                let correct = 0;
+                let incorrect = 0;
+                for (let wordIndex = range.startIndex; wordIndex <= range.endIndex; wordIndex++) {
+                    const state = pdfWords[wordIndex] ? pdfWords[wordIndex].state : 'pending';
+                    if (state === 'correct') {
+                        correct++;
+                    } else if (state === 'incorrect') {
+                        incorrect++;
+                    }
+                }
+
+                const attempted = correct + incorrect;
+                const sentenceAccuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
+                const sentenceRetries = Math.max(0, Number(sentenceAttemptCounts[sentenceIndex] || 0) - 1);
+                const activeMs = Math.max(0, Number(sentenceActiveMs[sentenceIndex] || 0));
+                const sentenceWpm = activeMs > 0 ? Math.round((correct / (activeMs / 60000))) : 0;
+                const preview = (pageLines[sentenceIndex] || '').slice(0, 72);
+
+                let statusClass = 'pending';
+                let statusText = 'Pending';
+                if (sentenceIndex < currentSentenceIndex || (sentenceIndex === currentSentenceIndex && totalWords > 0 && currentWordIndex > range.endIndex)) {
+                    statusClass = 'done';
+                    statusText = 'Done';
+                } else if (sentenceIndex === currentSentenceIndex) {
+                    statusClass = 'current';
+                    statusText = 'Current';
+                }
+
+                if (sentenceIndex === currentSentenceIndex) {
+                    currentSentenceAccuracy = sentenceAccuracy;
+                    currentSentenceRetries = sentenceRetries;
+                }
+
+                rowsHtml += `<div class="analytics-row"><span>${sentenceIndex + 1}</span><span>${sentenceAccuracy}%</span><span>${sentenceWpm}</span><span>${sentenceRetries}</span><span class="analytics-row-status ${statusClass}">${statusText}</span><span>${escapeHtml(preview)}${preview.length >= 72 ? '…' : ''}</span></div>`;
+            }
+
+            analyticsBody.innerHTML = rowsHtml;
+            currentSentenceEl.textContent = `${Math.min(currentSentenceIndex + 1, sentenceWordRanges.length)} / ${sentenceWordRanges.length}`;
+            currentAccuracyEl.textContent = `${currentSentenceAccuracy}%`;
+            currentRetriesEl.textContent = String(currentSentenceRetries);
+        }
+
+        function getSupportedAudioMimeType() {
+            const mimeTypes = [
+                'audio/webm;codecs=opus',
+                'audio/webm',
+                'audio/mp4',
+                'audio/ogg;codecs=opus'
+            ];
+
+            for (let i = 0; i < mimeTypes.length; i++) {
+                if (window.MediaRecorder && MediaRecorder.isTypeSupported(mimeTypes[i])) {
+                    return mimeTypes[i];
+                }
+            }
+
+            return '';
+        }
+
+        function mergeTranscriptSegments(existingText, incomingText) {
+            const existing = existingText.trim();
+            const incoming = incomingText.trim();
+
+            if (!incoming) {
+                return existing;
+            }
+
+            if (!existing) {
+                return incoming;
+            }
+
+            const normalizedExisting = normalizeTextToWords(existing).join(' ');
+            const normalizedIncoming = normalizeTextToWords(incoming).join(' ');
+            if (!normalizedIncoming) {
+                return existing;
+            }
+
+            const existingWords = normalizedExisting.split(' ').filter(Boolean);
+            const incomingWords = normalizedIncoming.split(' ').filter(Boolean);
+            const maxOverlap = Math.min(existingWords.length, incomingWords.length, 10);
+
+            for (let overlap = maxOverlap; overlap > 0; overlap--) {
+                const existingTail = existingWords.slice(existingWords.length - overlap).join(' ');
+                const incomingHead = incomingWords.slice(0, overlap).join(' ');
+                if (existingTail === incomingHead) {
+                    const mergedSuffix = incomingWords.slice(overlap).join(' ');
+                    return `${existing} ${mergedSuffix}`.trim();
+                }
+            }
+
+            return `${existing} ${incoming}`.trim();
+        }
+
+        async function processAudioChunkQueue() {
+            if (isProcessingAudioChunk || audioChunkQueue.length === 0) {
+                return;
+            }
+
+            isProcessingAudioChunk = true;
+            const chunk = audioChunkQueue.shift();
+
+            try {
+                const requestStartedAt = performance.now();
+                const formData = new FormData();
+                formData.append('audio', chunk, 'speech-chunk.webm');
+
+                const response = await fetch(`${API_URL}/transcribe-audio`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.details || result.error || 'Failed to transcribe audio');
+                }
+
+                updateLatencyBadge(performance.now() - requestStartedAt);
+                currentConfidenceScore = 0.78;
+                updateAdaptiveSkipWindow();
+
+                whisperTranscript = mergeTranscriptSegments(whisperTranscript, result.text);
+                const isPageComplete = applySequentialMatching(whisperTranscript, {
+                    provisional: true,
+                    confidence: currentConfidenceScore,
+                    skipWindow: dynamicSkipWindow
+                });
+                document.getElementById('transcribedContent').textContent = whisperTranscript;
+                document.getElementById('transcribedText').style.display = whisperTranscript ? 'block' : 'none';
+                verifyText(whisperTranscript, isPageComplete, false);
+            } catch (error) {
+                const isNetworkFailure = /failed to fetch|networkerror|network request failed/i.test(String(error && error.message));
+                if (isNetworkFailure) {
+                    showResponse('error', 'Transcription Error', `Failed to reach the transcription API. Ensure the server is running on ${window.location.origin} and try again.`);
+                    if (sttMode === 'local-whisper' && SpeechRecognition) {
+                        sttMode = 'browser';
+                    }
+                } else {
+                    showResponse('error', 'Transcription Error', error.message);
+                }
+            } finally {
+                isProcessingAudioChunk = false;
+                if (audioChunkQueue.length > 0) {
+                    processAudioChunkQueue();
+                }
+            }
+        }
+
+        function cleanupLocalRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                return;
+            }
+
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+
+            mediaRecorder = null;
+        }
+
+        async function startLocalWhisperRecording() {
+            const mimeType = getSupportedAudioMimeType();
+            mediaStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    channelCount: 1,
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+
+            mediaRecorder = mimeType
+                ? new MediaRecorder(mediaStream, { mimeType, audioBitsPerSecond: 64000 })
+                : new MediaRecorder(mediaStream);
+
+            audioChunkQueue = [];
+            isProcessingAudioChunk = false;
+            whisperTranscript = '';
+            beginClipCapture();
+            setRecordingUiState(true, 'Listening...');
+            updateRecordingControls();
+
+            mediaRecorder.addEventListener('dataavailable', (event) => {
+                if (event.data && event.data.size > 0) {
+                    activeRecordingChunks.push(event.data);
+                    audioChunkQueue.push(event.data);
+                    processAudioChunkQueue();
+                }
+            });
+
+            mediaRecorder.addEventListener('pause', () => {
+                setRecordingUiState(false, 'Paused');
+                updateRecordingControls();
+            });
+
+            mediaRecorder.addEventListener('resume', () => {
+                setRecordingUiState(true, 'Listening...');
+                updateRecordingControls();
+            });
+
+            mediaRecorder.addEventListener('stop', async () => {
+                isPaused = false;
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+                mediaRecorder = null;
+                setRecordingUiState(false, 'Start Recording');
+                updateRecordingControls();
+                await finalizeClipCapture();
+            }, { once: true });
+
+            mediaRecorder.start(900);
+        }
+
+        async function initializeSpeechMode() {
+            try {
+                const response = await fetch(`${API_URL}/stt/health`);
+                const result = await response.json();
+                localSttAvailable = Boolean(response.ok && result.success);
+            } catch (error) {
+                localSttAvailable = false;
+            }
+
+            if (localSttAvailable && navigator.mediaDevices && window.MediaRecorder) {
+                sttMode = 'local-whisper';
+                document.getElementById('noSpeechSupport').style.display = 'none';
+                updateSttModeBadge();
+                updateRecordingControls();
+                return;
+            }
+
+            if (!SpeechRecognition) {
+                sttMode = 'none';
+                document.getElementById('noSpeechSupport').style.display = 'block';
+                document.getElementById('recordBtn').disabled = true;
+                updateSttModeBadge();
+                updateRecordingControls();
+                return;
+            }
+
+            sttMode = 'browser';
+            updateSttModeBadge();
+            updateRecordingControls();
+        }
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            recognition.maxAlternatives = 5;
+
+            recognition.onstart = () => {
+                isPaused = false;
+                setRecordingUiState(true, 'Listening...');
+                updateRecordingControls();
+            };
+
+            recognition.onresult = (event) => {
+                const resultStartTs = performance.now();
+                stableTranscript = '';
+                liveTranscript = '';
+                let confidenceTotal = 0;
+                let confidenceCount = 0;
+
+                for (let i = 0; i < event.results.length; i++) {
+                    const baseTranscript = `${stableTranscript} ${liveTranscript}`.trim();
+                    const bestChoice = chooseBestAlternative(event.results[i], baseTranscript);
+                    const bestTranscript = bestChoice.transcript;
+                    if (typeof bestChoice.confidence === 'number') {
+                        confidenceTotal += bestChoice.confidence;
+                        confidenceCount++;
+                    }
+
+                    if (event.results[i].isFinal) {
+                        stableTranscript = `${stableTranscript} ${bestTranscript}`.trim();
+                    } else {
+                        liveTranscript = `${liveTranscript} ${bestTranscript}`.trim();
+                    }
+                }
+
+                currentConfidenceScore = confidenceCount > 0 ? (confidenceTotal / confidenceCount) : 0.75;
+                updateLatencyBadge(performance.now() - resultStartTs);
+                updateAdaptiveSkipWindow();
+
+                const combinedText = `${stableTranscript} ${liveTranscript}`.trim();
+                const isFinalFrame = liveTranscript.trim().length === 0;
+                const isPageComplete = applySequentialMatching(combinedText, {
+                    provisional: !isFinalFrame,
+                    confidence: currentConfidenceScore,
+                    skipWindow: dynamicSkipWindow
+                });
+
+                document.getElementById('transcribedContent').textContent = combinedText;
+                document.getElementById('transcribedText').style.display = combinedText ? 'block' : 'none';
+
+                verifyText(combinedText, isPageComplete && isFinalFrame, isFinalFrame);
+            };
+
+            recognition.onerror = (event) => {
+                showResponse('error', 'Speech Error', `Speech recognition error: ${event.error}`);
+            };
+
+            recognition.onend = () => {
+                setRecordingUiState(false, 'Start Recording');
+                updateRecordingControls();
+
+                if (!isPaused) {
+                    stopArchiveRecorderForBrowserMode();
+                }
+
+                if (liveTranscript.trim().length > 0 || stableTranscript.trim().length > 0) {
+                    const combinedText = `${stableTranscript} ${liveTranscript}`.trim();
+                    const isPageComplete = applySequentialMatching(combinedText, {
+                        provisional: false,
+                        confidence: currentConfidenceScore,
+                        skipWindow: dynamicSkipWindow
+                    });
+                    verifyText(combinedText, isPageComplete, true);
+                }
+            };
+        } else {
+            document.getElementById('noSpeechSupport').style.display = 'block';
+        }
+
+        // Upload handler
+        const uploadArea = document.getElementById('uploadArea');
+        const pdfInput = document.getElementById('pdfInput');
+
+        uploadArea.addEventListener('click', () => pdfInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                await uploadPdf(files[0]);
+            }
+        });
+
+        pdfInput.addEventListener('change', async (e) => {
+            if (e.target.files.length > 0) {
+                await uploadPdf(e.target.files[0]);
+            }
+        });
+
+        // Upload PDF
+        async function uploadPdf(file) {
+            if (file.type !== 'application/pdf') {
+                showResponse('error', 'Invalid File', 'Please upload a PDF file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('pdf', file);
+            setUploadOverlayState('uploading', 'Uploading PDF...', 'Please wait while we process your document.');
+
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    totalPages = result.totalPages;
+                    currentPageIndex = 0;
+                    completedPages = 0;
+                    successCount = 0;
+                    currentPdfFileName = file.name;
+                    wordErrorMap = {};
+                    speechWordsPerSecond = 0;
+                    recentErrorRate = 0;
+                    clearSavedSession();
+                    finalSessionReady = false;
+                    setResultsActionVisibility(false);
+                    resultsVisible = false;
+                    document.getElementById('analyticsPanel').style.display = 'none';
+
+                    document.getElementById('fileName').textContent = `File: ${file.name}`;
+                    document.getElementById('pageCount').textContent = `Total Pages: ${totalPages}`;
+                    document.getElementById('fileInfo').classList.add('show');
+                    await registerUploadedPdf(file.name, totalPages);
+
+                    const uploadSection = document.getElementById('uploadSection');
+                    if (uploadSection) {
+                        uploadSection.style.display = 'none';
+                    }
+
+                    document.getElementById('readerSection').classList.add('active');
+                    setUploadOverlayState('success', 'PDF Uploaded', 'Your file is ready. Moving you to reading mode...');
+
+                    await loadCurrentPage();
+                    renderCoachTrends();
+                    hideUploadOverlay(750);
+                    showResponse('success', 'PDF Uploaded', 'Document uploaded successfully. You are now in reading mode.');
+                    document.getElementById('readerSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    hideUploadOverlay();
+                    showResponse('error', 'Upload Failed', result.error);
+                }
+            } catch (error) {
+                hideUploadOverlay();
+                showResponse('error', 'Connection Error', error.message);
+            }
+        }
+
+        // Load current page
+        async function loadCurrentPage() {
+            try {
+                const response = await fetch(`${API_URL}/current-page`);
+                const result = await response.json();
+
+                if (result.success) {
+                    // Store original content and render with lines
+                    currentPageContent = result.content;
+                    currentPageIndex = Number(result.pageIndex || currentPageIndex);
+                    totalPages = Number(result.totalPages || totalPages);
+                    currentWordIndex = 0;
+                    stableTranscript = '';
+                    liveTranscript = '';
+                    whisperTranscript = '';
+                    audioChunkQueue = [];
+                    lastAutoScrollBlock = -1;
+                    pageCompletionHandled = false;
+                    lastProcessedTranscriptFingerprint = '';
+                    
+                    // Render with line indicators and highlighting
+                    renderPageWithLines(result.content);
+                    
+                    document.getElementById('pageIndicator').textContent = 
+                        `Page ${result.pageIndex + 1} of ${result.totalPages}`;
+
+                    updateProgress();
+                    updateStats();
+                    if (!finalSessionReady) {
+                        resultsVisible = false;
+                        document.getElementById('analyticsPanel').style.display = 'none';
+                    }
+
+                    // Clear previous responses
+                    document.getElementById('responseBox').classList.remove('show');
+                    document.getElementById('transcribedText').style.display = 'none';
+                    document.getElementById('nextBtn').style.display = 'none';
+                    isPaused = false;
+                    updateRecordingControls();
+
+                    // Auto-scroll to page content
+                    document.getElementById('pageContent').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Enable record button
+                    if (recognition) {
+                        document.getElementById('recordBtn').disabled = false;
+                    }
+
+                    persistSessionState();
+                    renderCoachTrends();
+                    return true;
+                }
+
+                return false;
+            } catch (error) {
+                showResponse('error', 'Error', error.message);
+                return false;
+            }
+        }
+
+        // Start recording
+        async function startRecording() {
+            if (isRecording || isPaused) {
+                isPaused = false;
+                if (sttMode === 'local-whisper') {
+                    cleanupLocalRecording();
+                    setRecordingUiState(false, 'Start Recording');
+                } else if (recognition) {
+                    stopArchiveRecorderForBrowserMode();
+                    recognition.stop();
+                }
+                updateRecordingControls();
+                return;
+            }
+
+            isPaused = false;
+
+            if (sttMode === 'local-whisper') {
+                try {
+                    await startLocalWhisperRecording();
+                } catch (error) {
+                    showResponse('error', 'Microphone Error', error.message);
+                }
+                return;
+            }
+
+            if (recognition && sttMode === 'browser') {
+                try {
+                    await startArchiveRecorderForBrowserMode();
+                } catch (error) {
+                    showResponse('info', 'Voice Archive Limited', 'Reading will continue, but local voice clip archiving is unavailable on this device.');
+                }
+                recognition.start();
+                return;
+            }
+
+            showResponse('error', 'Speech Engine Unavailable', 'No compatible speech-to-text engine is available in this browser.');
+        }
+
+        function pauseRecording() {
+            if (!isRecording) {
+                return;
+            }
+
+            if (sttMode === 'local-whisper' && mediaRecorder) {
+                if (typeof mediaRecorder.pause === 'function' && mediaRecorder.state === 'recording') {
+                    isPaused = true;
+                    mediaRecorder.pause();
+                    return;
+                }
+
+                cleanupLocalRecording();
+                isPaused = true;
+                setRecordingUiState(false, 'Paused');
+                updateRecordingControls();
+                return;
+            }
+
+            if (recognition && sttMode === 'browser') {
+                isPaused = true;
+                if (archiveRecorder && archiveRecorder.state === 'recording' && typeof archiveRecorder.pause === 'function') {
+                    archiveRecorder.pause();
+                }
+                recognition.stop();
+            }
+        }
+
+        async function resumeRecording() {
+            if (!isPaused) {
+                return;
+            }
+
+            if (sttMode === 'local-whisper') {
+                if (mediaRecorder && typeof mediaRecorder.resume === 'function' && mediaRecorder.state === 'paused') {
+                    isPaused = false;
+                    mediaRecorder.resume();
+                    return;
+                }
+
+                try {
+                    await startLocalWhisperRecording();
+                    isPaused = false;
+                    updateRecordingControls();
+                } catch (error) {
+                    showResponse('error', 'Microphone Error', error.message);
+                }
+                return;
+            }
+
+            if (recognition && sttMode === 'browser') {
+                isPaused = false;
+                if (archiveRecorder && archiveRecorder.state === 'paused' && typeof archiveRecorder.resume === 'function') {
+                    archiveRecorder.resume();
+                }
+                recognition.start();
+            }
+        }
+
+        // Verify spoken text
+        // Split content into sentences/lines
+        function splitIntoLines(text) {
+            const protectedText = text
+                .replace(/\bDr\./g, 'Dr<prd>')
+                .replace(/\bMr\./g, 'Mr<prd>')
+                .replace(/\bMrs\./g, 'Mrs<prd>')
+                .replace(/\bMs\./g, 'Ms<prd>')
+                .replace(/\bProf\./g, 'Prof<prd>')
+                .replace(/\ba\.m\./gi, 'am<prd>')
+                .replace(/\bp\.m\./gi, 'pm<prd>');
+
+            const sentences = protectedText
+                .split(/([.!?]+)/)
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            // Combine delimiters back with sentences
+            let lines = [];
+            for (let i = 0; i < sentences.length; i += 2) {
+                let line = sentences[i];
+                if (i + 1 < sentences.length) {
+                    line += sentences[i + 1];
+                }
+                if (line.trim().length > 0) {
+                    lines.push(line.replace(/<prd>/g, '.').trim());
+                }
+            }
+            return lines.length > 0 ? lines : [text];
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function normalizeWord(word) {
+            return word.toLowerCase().replace(/[.,!?;:\-"'()]/g, '').trim();
+        }
+
+        function numberToWords(numberValue) {
+            const underTwenty = [
+                'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+                'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+                'seventeen', 'eighteen', 'nineteen'
+            ];
+            const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+            if (numberValue < 20) {
+                return underTwenty[numberValue];
+            }
+
+            if (numberValue < 100) {
+                const tensValue = Math.floor(numberValue / 10);
+                const unitValue = numberValue % 10;
+                return unitValue === 0
+                    ? tens[tensValue]
+                    : `${tens[tensValue]}${underTwenty[unitValue]}`;
+            }
+
+            return String(numberValue);
+        }
+
+        function wordToNumberToken(word) {
+            const directMap = {
+                zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9',
+                ten: '10', eleven: '11', twelve: '12', thirteen: '13', fourteen: '14', fifteen: '15', sixteen: '16',
+                seventeen: '17', eighteen: '18', nineteen: '19', twenty: '20', thirty: '30', forty: '40', fifty: '50',
+                sixty: '60', seventy: '70', eighty: '80', ninety: '90'
+            };
+
+            if (directMap[word]) {
+                return directMap[word];
+            }
+
+            return word;
+        }
+
+        function canonicalizeWord(word) {
+            const cleanWord = normalizeWord(word);
+            if (!cleanWord) {
+                return '';
+            }
+
+            const abbreviationMap = {
+                dr: 'doctor',
+                mr: 'mister',
+                mrs: 'misses',
+                ms: 'miss',
+                prof: 'professor',
+                am: 'am',
+                pm: 'pm',
+                'a.m': 'am',
+                'p.m': 'pm',
+                percent: 'percent'
+            };
+
+            if (abbreviationMap[cleanWord]) {
+                return abbreviationMap[cleanWord];
+            }
+
+            if (cleanWord.endsWith('%')) {
+                const numericPortion = cleanWord.slice(0, -1);
+                if (/^\d+$/.test(numericPortion)) {
+                    return `${numberToWords(Number(numericPortion))}percent`;
+                }
+                return `${numericPortion}percent`;
+            }
+
+            if (/^\d+$/.test(cleanWord)) {
+                const numericValue = Number(cleanWord);
+                if (Number.isFinite(numericValue) && numericValue >= 0 && numericValue < 100) {
+                    return numberToWords(numericValue);
+                }
+                return cleanWord;
+            }
+
+            const collapsedWord = cleanWord.replace(/\s+/g, '');
+            const numericToken = wordToNumberToken(collapsedWord);
+            if (numericToken !== collapsedWord && /^\d+$/.test(numericToken)) {
+                return numberToWords(Number(numericToken));
+            }
+
+            return collapsedWord;
+        }
+
+        function buildSpokenWordVariants(word, nextWord) {
+            const variants = [{ value: word, consumeTokens: 1 }];
+
+            if (nextWord) {
+                variants.push({ value: `${word}${nextWord}`, consumeTokens: 2 });
+            }
+
+            if (word === 'a' && nextWord === 'm') {
+                variants.push({ value: 'am', consumeTokens: 2 });
+            }
+
+            if (word === 'p' && nextWord === 'm') {
+                variants.push({ value: 'pm', consumeTokens: 2 });
+            }
+
+            if (/^\d+$/.test(word)) {
+                variants.push({ value: numberToWords(Number(word)), consumeTokens: 1 });
+            }
+
+            return variants;
+        }
+
+        function normalizeTextToWords(text) {
+            const rawWords = text.split(/\s+/);
+            const normalized = [];
+            for (let i = 0; i < rawWords.length; i++) {
+                const clean = canonicalizeWord(rawWords[i]);
+                if (clean.length > 0) {
+                    normalized.push(clean);
+                }
+            }
+            return normalized;
+        }
+
+        // Render content as sequential word tokens
+        function renderPageWithLines(content) {
+            pageLines = splitIntoLines(content);
+            pdfWords = [];
+            lineWordRanges = [];
+            sentenceWordRanges = [];
+            currentWordIndex = 0;
+            currentSentenceIndex = 0;
+            totalSentenceCount = pageLines.length;
+            totalAttemptedWords = 0;
+            totalCorrectWords = 0;
+            totalIncorrectWords = 0;
+            accuracyPercent = 0;
+            sentenceAttemptCounts = new Array(pageLines.length).fill(0);
+            sentenceActiveMs = new Array(pageLines.length).fill(0);
+            lastProcessedTranscriptFingerprint = '';
+            lastTranscriptUpdateTimestamp = 0;
+            stableTranscript = '';
+            liveTranscript = '';
+            pageCompletionHandled = false;
+
+            for (let lineIndex = 0; lineIndex < pageLines.length; lineIndex++) {
+                const line = pageLines[lineIndex];
+                const tokens = line.match(/\S+/g) || [];
+                const startIndex = pdfWords.length;
+
+                for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
+                    pdfWords.push({
+                        text: tokens[tokenIndex],
+                        clean: canonicalizeWord(tokens[tokenIndex]),
+                        lineIndex,
+                        state: 'pending'
+                    });
+                }
+
+                const endIndex = pdfWords.length - 1;
+                lineWordRanges.push({ startIndex, endIndex });
+                sentenceWordRanges.push({ startIndex, endIndex });
+            }
+
+            if (pdfWords.length > 0) {
+                pdfWords[0].state = 'current';
+            }
+
+            let html = '<div class="line-indicator">Word 1 of ' + pdfWords.length + '</div>';
+
+            for (let lineIndex = 0; lineIndex < pageLines.length; lineIndex++) {
+                const lineClass = lineIndex === 0 ? 'page-line current' : 'page-line';
+                html += `<div class="${lineClass}" id="line-${lineIndex}">`;
+
+                let firstInLine = true;
+                for (let wordIndex = 0; wordIndex < pdfWords.length; wordIndex++) {
+                    const word = pdfWords[wordIndex];
+                    if (word.lineIndex !== lineIndex) {
+                        continue;
+                    }
+
+                    if (!firstInLine) {
+                        html += ' ';
+                    }
+                    firstInLine = false;
+                    html += `<span class="word-token ${word.state}" id="word-${wordIndex}">${escapeHtml(word.text)}</span>`;
+                }
+
+                html += '</div>';
+            }
+
+            document.getElementById('pageContent').innerHTML = html;
+            refreshLineStyles();
+            updateLineIndicator();
+            updateSentenceAnalytics();
+        }
+
+        function updateLineIndicator() {
+            const lineIndicator = document.querySelector('.line-indicator');
+            if (!lineIndicator) return;
+
+            if (pdfWords.length === 0) {
+                lineIndicator.textContent = 'No words found on this page';
+                return;
+            }
+
+            const currentPosition = currentWordIndex < pdfWords.length ? currentWordIndex + 1 : pdfWords.length;
+            const currentLine = currentWordIndex < pdfWords.length
+                ? pdfWords[currentWordIndex].lineIndex + 1
+                : pageLines.length;
+            const currentSentence = currentSentenceIndex + 1;
+
+            lineIndicator.textContent = `Word ${currentPosition} of ${pdfWords.length} | Sentence ${currentSentence} of ${totalSentenceCount} | Accuracy ${accuracyPercent}%`;
+        }
+
+        function setWordState(wordIndex, state) {
+            if (wordIndex < 0 || wordIndex >= pdfWords.length) {
+                return;
+            }
+
+            pdfWords[wordIndex].state = state;
+            const wordEl = document.getElementById(`word-${wordIndex}`);
+            if (wordEl) {
+                wordEl.className = `word-token ${state}`;
+            }
+        }
+
+        function scrollReadingViewToLine(targetLineIndex, alignToTop = false) {
+            const pageContentElement = document.getElementById('pageContent');
+            const targetLineElement = document.getElementById(`line-${targetLineIndex}`);
+
+            if (!pageContentElement || !targetLineElement) {
+                return;
+            }
+
+            const topOffset = alignToTop
+                ? Math.max(0, targetLineElement.offsetTop - 18)
+                : Math.max(0, targetLineElement.offsetTop - (pageContentElement.clientHeight * 0.3));
+
+            const delta = Math.abs(pageContentElement.scrollTop - topOffset);
+            if (delta < 16) {
+                return;
+            }
+
+            pageContentElement.scrollTo({ top: topOffset, behavior: 'smooth' });
+        }
+
+        function refreshLineStyles() {
+            let focusedLine = 0;
+
+            if (currentWordIndex < pdfWords.length) {
+                focusedLine = pdfWords[currentWordIndex].lineIndex;
+            } else if (pageLines.length > 0) {
+                focusedLine = pageLines.length - 1;
+            }
+
+            for (let lineIdx = 0; lineIdx < lineWordRanges.length; lineIdx++) {
+                const lineEl = document.getElementById(`line-${lineIdx}`);
+                if (!lineEl) continue;
+
+                const range = lineWordRanges[lineIdx];
+                const lineCompleted = range.endIndex >= 0 && currentWordIndex > range.endIndex;
+
+                if (lineCompleted) {
+                    lineEl.className = 'page-line completed';
+                } else if (lineIdx === focusedLine) {
+                    lineEl.className = 'page-line current';
+                } else {
+                    lineEl.className = 'page-line';
+                }
+            }
+
+            currentSentenceIndex = Math.max(0, Math.min(focusedLine, Math.max(0, totalSentenceCount - 1)));
+
+            const currentBlock = Math.floor(currentSentenceIndex / 2);
+            if (currentBlock !== lastAutoScrollBlock) {
+                const targetLineIndex = currentBlock * 2;
+                scrollReadingViewToLine(targetLineIndex, currentBlock > 0);
+                lastAutoScrollBlock = currentBlock;
+            }
+
+            applyVisibleLinesWindow();
+        }
+
+        function findMatchingVariant(variants, expectedWordClean) {
+            for (let idx = 0; idx < variants.length; idx++) {
+                if (isSequentialWordMatch(variants[idx].value, expectedWordClean)) {
+                    return variants[idx];
+                }
+            }
+
+            return null;
+        }
+
+        function scoreTranscriptAgainstPdf(spokenText) {
+            const spokenWords = normalizeTextToWords(spokenText);
+            let spokenIndex = 0;
+            let expectedIndex = 0;
+            let score = 0;
+
+            while (spokenIndex < spokenWords.length && expectedIndex < pdfWords.length) {
+                const spokenWord = spokenWords[spokenIndex];
+                const nextSpokenWord = spokenIndex + 1 < spokenWords.length ? spokenWords[spokenIndex + 1] : '';
+                const variants = buildSpokenWordVariants(spokenWord, nextSpokenWord);
+                let matchedVariant = null;
+                let matchedLookAhead = 0;
+
+                for (let lookAhead = 0; lookAhead <= 3; lookAhead++) {
+                    const candidateIndex = expectedIndex + lookAhead;
+                    if (candidateIndex >= pdfWords.length) {
+                        break;
+                    }
+
+                    const candidateMatch = findMatchingVariant(variants, pdfWords[candidateIndex].clean);
+                    if (candidateMatch) {
+                        matchedVariant = candidateMatch;
+                        matchedLookAhead = lookAhead;
+                        break;
+                    }
+                }
+
+                if (matchedVariant) {
+                    score += matchedLookAhead === 0 ? 3 : 2;
+                    score -= matchedLookAhead;
+                    spokenIndex += matchedVariant.consumeTokens;
+                    expectedIndex += matchedLookAhead + 1;
+                } else {
+                    score -= 1;
+                    spokenIndex++;
+                }
+            }
+
+            return score;
+        }
+
+        function chooseBestAlternative(result, baseTranscript) {
+            let bestTranscript = result[0] ? result[0].transcript : '';
+            let bestConfidence = typeof (result[0] && result[0].confidence) === 'number' ? result[0].confidence : 0;
+            let bestScore = Number.NEGATIVE_INFINITY;
+
+            for (let altIndex = 0; altIndex < result.length; altIndex++) {
+                const alternative = result[altIndex];
+                const candidateTranscript = `${baseTranscript} ${alternative.transcript}`.trim();
+                const confidenceScore = typeof alternative.confidence === 'number' ? alternative.confidence : 0;
+                const score = scoreTranscriptAgainstPdf(candidateTranscript) + confidenceScore;
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestTranscript = alternative.transcript;
+                    bestConfidence = confidenceScore;
+                }
+            }
+
+            return { transcript: bestTranscript, confidence: bestConfidence };
+        }
+
+        function isSequentialWordMatch(spokenWord, expectedWord) {
+            if (spokenWord === expectedWord) {
+                return true;
+            }
+
+            if (customVocabularySet.has(expectedWord)) {
+                if (spokenWord.startsWith(expectedWord.slice(0, Math.max(3, expectedWord.length - 1)))) {
+                    return true;
+                }
+                if (Math.abs(spokenWord.length - expectedWord.length) <= 2 && levenshteinDistance(spokenWord, expectedWord) <= 2) {
+                    return true;
+                }
+            }
+
+            if (spokenWord.length > 2 && expectedWord.length > 2) {
+                const spokenStem = spokenWord.slice(0, Math.max(3, spokenWord.length - 1));
+                const expectedStem = expectedWord.slice(0, Math.max(3, expectedWord.length - 1));
+                if (spokenStem === expectedStem) {
+                    return true;
+                }
+            }
+
+            if (spokenWord.length > 3 && expectedWord.length > 3 && Math.abs(spokenWord.length - expectedWord.length) <= 1) {
+                return levenshteinDistance(spokenWord, expectedWord) <= 1;
+            }
+
+            return false;
+        }
+
+        function isAnchorSpokenWord(word) {
+            if (!word) return false;
+            if (word.length < 5) return false;
+            return !LOW_SIGNAL_WORDS.has(word);
+        }
+
+        function applySequentialMatching(spokenText, options = {}) {
+            if (pdfWords.length === 0) {
+                return false;
+            }
+
+            const provisional = Boolean(options.provisional);
+            const confidence = typeof options.confidence === 'number' ? options.confidence : 1;
+            const skipWindowLimit = clampValue(Number(options.skipWindow || dynamicSkipWindow || 2), 1, 4);
+            const sentenceJumpWindow = clampValue(Number(options.sentenceJumpWindow || 18), 8, 28);
+
+            const spokenWords = normalizeTextToWords(spokenText);
+            let expectedIndex = 0;
+            let spokenIndex = 0;
+            let correctCount = 0;
+            let incorrectCount = 0;
+
+            for (let wordIndex = 0; wordIndex < pdfWords.length; wordIndex++) {
+                setWordState(wordIndex, 'pending');
+            }
+
+            while (spokenIndex < spokenWords.length && expectedIndex < pdfWords.length) {
+                const spokenWord = spokenWords[spokenIndex];
+                const nextSpokenWord = spokenIndex + 1 < spokenWords.length
+                    ? spokenWords[spokenIndex + 1]
+                    : '';
+                const expectedWord = pdfWords[expectedIndex];
+                const spokenVariants = buildSpokenWordVariants(spokenWord, nextSpokenWord);
+                const directMatch = findMatchingVariant(spokenVariants, expectedWord.clean);
+
+                if (directMatch) {
+                    const isMaybe = provisional && confidence < 0.72;
+                    setWordState(expectedIndex, isMaybe ? 'maybe' : 'correct');
+                    correctCount++;
+                    expectedIndex++;
+                    spokenIndex += directMatch.consumeTokens;
+                    continue;
+                }
+
+                let matchedInSkipWindow = false;
+                for (let lookAhead = 1; lookAhead <= skipWindowLimit; lookAhead++) {
+                    const candidateIndex = expectedIndex + lookAhead;
+                    if (candidateIndex >= pdfWords.length) {
+                        break;
+                    }
+
+                    const skipWindowMatch = findMatchingVariant(spokenVariants, pdfWords[candidateIndex].clean);
+                    if (!skipWindowMatch) {
+                        continue;
+                    }
+
+                    for (let skipped = expectedIndex; skipped < candidateIndex; skipped++) {
+                        if (!provisional) {
+                            setWordState(skipped, 'incorrect');
+                            incorrectCount++;
+                            const skippedWord = pdfWords[skipped] ? pdfWords[skipped].clean : '';
+                            if (skippedWord) {
+                                wordErrorMap[skippedWord] = Number(wordErrorMap[skippedWord] || 0) + 1;
+                            }
+                        }
+                    }
+
+                    const isMaybe = provisional && confidence < 0.72;
+                    setWordState(candidateIndex, isMaybe ? 'maybe' : 'correct');
+                    correctCount++;
+                    expectedIndex = candidateIndex + 1;
+                    spokenIndex += skipWindowMatch.consumeTokens;
+                    matchedInSkipWindow = true;
+                    break;
+                }
+
+                if (matchedInSkipWindow) {
+                    continue;
+                }
+
+                // Controlled long-jump support: if a learner skips one full sentence,
+                // allow matching against a farther anchor word and continue progression.
+                const canTrySentenceJump = (!provisional || confidence >= 0.68) && isAnchorSpokenWord(spokenWord);
+                if (canTrySentenceJump) {
+                    let sentenceJumpMatched = false;
+                    for (let lookAhead = skipWindowLimit + 1; lookAhead <= sentenceJumpWindow; lookAhead++) {
+                        const candidateIndex = expectedIndex + lookAhead;
+                        if (candidateIndex >= pdfWords.length) {
+                            break;
+                        }
+
+                        const sentenceJumpMatch = findMatchingVariant(spokenVariants, pdfWords[candidateIndex].clean);
+                        if (!sentenceJumpMatch) {
+                            continue;
+                        }
+
+                        for (let skipped = expectedIndex; skipped < candidateIndex; skipped++) {
+                            if (!provisional) {
+                                setWordState(skipped, 'incorrect');
+                                incorrectCount++;
+                                const skippedWord = pdfWords[skipped] ? pdfWords[skipped].clean : '';
+                                if (skippedWord) {
+                                    wordErrorMap[skippedWord] = Number(wordErrorMap[skippedWord] || 0) + 1;
+                                }
+                            }
+                        }
+
+                        const isMaybe = provisional && confidence < 0.72;
+                        setWordState(candidateIndex, isMaybe ? 'maybe' : 'correct');
+                        correctCount++;
+                        expectedIndex = candidateIndex + 1;
+                        spokenIndex += sentenceJumpMatch.consumeTokens;
+                        sentenceJumpMatched = true;
+                        break;
+                    }
+
+                    if (sentenceJumpMatched) {
+                        continue;
+                    }
+                }
+
+                if (!provisional) {
+                    setWordState(expectedIndex, 'incorrect');
+                    incorrectCount++;
+                    const hardWord = pdfWords[expectedIndex] ? pdfWords[expectedIndex].clean : '';
+                    if (hardWord) {
+                        wordErrorMap[hardWord] = Number(wordErrorMap[hardWord] || 0) + 1;
+                    }
+                }
+                spokenIndex++;
+            }
+
+            currentWordIndex = expectedIndex;
+
+            totalCorrectWords = correctCount;
+            totalIncorrectWords = incorrectCount;
+            totalAttemptedWords = totalCorrectWords + totalIncorrectWords;
+            accuracyPercent = totalAttemptedWords > 0
+                ? Math.round((totalCorrectWords / totalAttemptedWords) * 100)
+                : 0;
+            lastMatchMetrics = {
+                correct: totalCorrectWords,
+                incorrect: totalIncorrectWords,
+                attempted: totalAttemptedWords
+            };
+            recentErrorRate = totalAttemptedWords > 0 ? totalIncorrectWords / totalAttemptedWords : recentErrorRate;
+            updateAdaptiveSkipWindow();
+
+            if (currentWordIndex < pdfWords.length) {
+                setWordState(currentWordIndex, 'current');
+            }
+
+            refreshLineStyles();
+            updateLineIndicator();
+            updateStats();
+            updateSentenceAnalytics();
+            updateHardestWordsHeatmap();
+            persistSessionState();
+
+            return currentWordIndex >= pdfWords.length;
+        }
+
+        // Calculate Levenshtein distance for single words
+        function levenshteinDistance(a, b) {
+            const costs = [];
+            for (let i = 0; i <= a.length; i++) {
+                let lastValue = i;
+                for (let j = 0; j <= b.length; j++) {
+                    if (i === 0) {
+                        costs[j] = j;
+                    } else if (j > 0) {
+                        let newValue = costs[j - 1];
+                        if (a.charAt(i - 1) !== b.charAt(j - 1)) {
+                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        }
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
+                if (i > 0) costs[b.length] = lastValue;
+            }
+            return costs[b.length];
+        }
+
+        function verifyText(text, isPageComplete = false, isFinalFrame = false) {
+            const transcriptFingerprint = getTranscriptFingerprint(text);
+            if (transcriptFingerprint && transcriptFingerprint !== lastProcessedTranscriptFingerprint) {
+                updateSpeechMetricsFromFingerprint(transcriptFingerprint);
+
+                const now = Date.now();
+                if (lastTranscriptUpdateTimestamp > 0 && currentSentenceIndex >= 0 && currentSentenceIndex < sentenceActiveMs.length) {
+                    const deltaMs = Math.max(0, now - lastTranscriptUpdateTimestamp);
+                    sentenceActiveMs[currentSentenceIndex] = Number(sentenceActiveMs[currentSentenceIndex] || 0) + deltaMs;
+                }
+                lastTranscriptUpdateTimestamp = now;
+
+                if (currentSentenceIndex >= 0 && currentSentenceIndex < sentenceAttemptCounts.length) {
+                    sentenceAttemptCounts[currentSentenceIndex] = Number(sentenceAttemptCounts[currentSentenceIndex] || 0) + 1;
+                }
+                lastProcessedTranscriptFingerprint = transcriptFingerprint;
+                updateSentenceAnalytics();
+            }
+
+            const progressPercent = pdfWords.length > 0
+                ? Math.round((currentWordIndex / pdfWords.length) * 100)
+                : 0;
+
+            const pageCompletedByWords = isPageComplete || currentWordIndex >= pdfWords.length;
+
+            if (pageCompletedByWords && !pageCompletionHandled) {
+                pageCompletionHandled = true;
+                if (sttMode === 'local-whisper') {
+                    isPaused = false;
+                    cleanupLocalRecording();
+                    setRecordingUiState(false, 'Start Recording');
+                } else if (recognition && isRecording) {
+                    isPaused = false;
+                    recognition.stop();
+                }
+                updateRecordingControls();
+                showResponse('success', 'Page Completed', `Sequential speech matching completed. Accuracy: ${accuracyPercent}%.`);
+                successCount++;
+                completedPages++;
+                document.getElementById('nextBtn').style.display = 'flex';
+                document.getElementById('nextBtn').textContent = 'Continue to Next Page';
+                currentWordIndex = pdfWords.length;
+                refreshLineStyles();
+                updateLineIndicator();
+                updateSentenceAnalytics();
+                persistSessionState();
+                recordSessionHistoryEvent('page-complete');
+                renderCoachTrends();
+
+                setTimeout(() => {
+                    if (currentPageIndex < totalPages - 1) {
+                        nextPage();
+                    }
+                }, 2000);
+            } else if (!pageCompletedByWords) {
+                const nextWord = currentWordIndex < pdfWords.length ? pdfWords[currentWordIndex].text : '';
+                showResponse('info', 'Reading In Progress', `Next expected word: ${nextWord} | Accuracy: ${accuracyPercent}% | Skip ${dynamicSkipWindow}`);
+                persistSessionState();
+                if (isFinalFrame) {
+                    recordSessionHistoryEvent('progress');
+                }
+            }
+
+            const similarityFill = document.querySelector('.response-box .similarity-fill') || createSimilarityBar();
+            similarityFill.style.width = progressPercent + '%';
+
+            if (progressPercent >= 80) {
+                similarityFill.style.background = 'linear-gradient(90deg, #22c55e, #16a34a)';
+            } else if (progressPercent >= 40) {
+                similarityFill.style.background = 'linear-gradient(90deg, #f59e0b, #22c55e)';
+            } else {
+                similarityFill.style.background = 'linear-gradient(90deg, #ef4444, #f59e0b)';
+            }
+        }
+
+        // Create similarity bar
+        function createSimilarityBar() {
+            const box = document.getElementById('responseBox');
+            const bar = document.createElement('div');
+            bar.className = 'similarity-bar';
+            bar.innerHTML = '<div class="similarity-fill"></div>';
+            box.appendChild(bar);
+            return bar.querySelector('.similarity-fill');
+        }
+
+        // Next page
+        async function nextPage() {
+            try {
+                const response = await fetch(`${API_URL}/next-page`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    currentPageIndex++;
+                    persistSessionState();
+                    recordSessionHistoryEvent('page-advance');
+                    renderCoachTrends();
+                    loadCurrentPage();
+                } else {
+                    showResponse('success', 'Session Complete', 'You have completed the entire document.');
+                    document.getElementById('recordBtn').disabled = true;
+                    finalSessionReady = true;
+                    setResultsActionVisibility(true);
+                    document.getElementById('nextBtn').style.display = 'flex';
+                    document.getElementById('nextBtn').textContent = 'Upload Another PDF';
+                    persistSessionState();
+                    recordSessionHistoryEvent('session-complete');
+                    renderCoachTrends();
+                }
+            } catch (error) {
+                showResponse('error', 'Error', error.message);
+            }
+        }
+
+        function openUploadForAnotherPdf() {
+            const uploadSection = document.getElementById('uploadSection');
+            const readerSection = document.getElementById('readerSection');
+            const fileInput = document.getElementById('pdfInput');
+            const nextButton = document.getElementById('nextBtn');
+
+            if (sttMode === 'local-whisper') {
+                isPaused = false;
+                cleanupLocalRecording();
+                setRecordingUiState(false, 'Start Recording');
+            } else if (recognition && isRecording) {
+                isPaused = false;
+                recognition.stop();
+            }
+
+            finalSessionReady = false;
+            resultsVisible = false;
+            currentPdfId = '';
+            localStorage.removeItem('currentPdfId');
+            clearSavedSession();
+            setResultsActionVisibility(false);
+
+            if (nextButton) {
+                nextButton.style.display = 'none';
+                nextButton.textContent = 'Skip to Next';
+            }
+
+            if (fileInput) {
+                fileInput.value = '';
+            }
+
+            if (readerSection) {
+                readerSection.classList.remove('active');
+            }
+
+            if (uploadSection) {
+                uploadSection.style.display = 'grid';
+                uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            showResponse('success', 'Ready for New Upload', 'You can now upload another PDF.');
+        }
+
+        // Manual next
+        function manualNext() {
+            if (finalSessionReady) {
+                openUploadForAnotherPdf();
+                return;
+            }
+            nextPage();
+        }
+
+        // Reset reader
+        async function resetReader() {
+            try {
+                if (sttMode === 'local-whisper') {
+                    isPaused = false;
+                    cleanupLocalRecording();
+                    setRecordingUiState(false, 'Start Recording');
+                } else if (recognition && isRecording) {
+                    isPaused = false;
+                    recognition.stop();
+                }
+                updateRecordingControls();
+                await fetch(`${API_URL}/reset`, { method: 'POST' });
+                currentPageIndex = 0;
+                completedPages = 0;
+                successCount = 0;
+                finalSessionReady = false;
+                resultsVisible = false;
+                setResultsActionVisibility(false);
+                document.getElementById('analyticsPanel').style.display = 'none';
+                persistSessionState();
+                recordSessionHistoryEvent('reset');
+                renderCoachTrends();
+                loadCurrentPage();
+            } catch (error) {
+                showResponse('error', 'Error', error.message);
+            }
+        }
+
+        // Show response
+        function showResponse(type, title, message) {
+            const box = document.getElementById('responseBox');
+            const content = document.getElementById('responseContent');
+
+            content.innerHTML = `<h3>${title}</h3><p>${message}</p>`;
+            box.className = 'response-box show ' + type;
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = ((currentPageIndex + 1) / totalPages) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            syncPdfProgressToServer();
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('completedCount').textContent = completedPages;
+            document.getElementById('successRate').textContent = accuracyPercent + '%';
+        }
+
+        // Check browser speech support on load
+        window.addEventListener('load', () => {
+            currentPdfId = localStorage.getItem('currentPdfId') || '';
+            loadHeaderUserBadge();
+            initializeSpeechMode();
+            setRoleView('learner');
+            updateRecordingControls();
+            document.getElementById('analyticsPanel').style.display = 'none';
+            setResultsActionVisibility(false);
+
+            const primaryBtn = document.getElementById('decisionPrimaryBtn');
+            const secondaryBtn = document.getElementById('decisionSecondaryBtn');
+            if (primaryBtn) {
+                primaryBtn.addEventListener('click', () => {
+                    if (pendingModalPrimaryAction) {
+                        pendingModalPrimaryAction();
+                    }
+                });
+            }
+            if (secondaryBtn) {
+                secondaryBtn.addEventListener('click', () => {
+                    if (pendingModalSecondaryAction) {
+                        pendingModalSecondaryAction();
+                    }
+                });
+            }
+
+            const accentSelect = document.getElementById('accentSelect');
+            if (accentSelect) {
+                setAccent(accentSelect.value, true);
+            }
+
+            showSavedSessionBanner();
+            renderCoachTrends();
+            updateHardestWordsHeatmap();
+            renderVoiceVault();
+            if (currentPdfId) {
+                resumeCurrentPdfFromSavedState();
+            }
+            if (!SpeechRecognition) {
+                document.getElementById('noSpeechSupport').style.display = 'block';
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            stopVaultClipPlayback();
+        });
+    </script>
+</body>
+</html>

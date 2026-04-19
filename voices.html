@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Clips - DocVoice Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #0d9488;
+            --accent-light: #14b8a6;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --warning: #ea580c;
+            --danger: #dc2626;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard-layout {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+
+        .header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.35rem 0.55rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--bg-light);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #e2e8f0;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            max-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-logout {
+            background: var(--accent);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: var(--accent-light);
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #eff6ff;
+            color: var(--accent);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .clips-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .clips-table thead {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .clips-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .clips-table td {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .clips-table tbody tr:hover {
+            background: var(--bg-light);
+        }
+
+        .clip-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .clip-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .accuracy-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .accuracy-high {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        .accuracy-medium {
+            background: #fef3c7;
+            color: #ca8a04;
+        }
+
+        .accuracy-low {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .clip-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-play {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-play:hover {
+            background: var(--accent-light);
+        }
+
+        .btn-download {
+            background: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #bfdbfe;
+        }
+
+        .btn-download:hover {
+            background: #e0f2fe;
+        }
+
+        .btn-rename {
+            background: #fef3c7;
+            color: var(--warning);
+        }
+
+        .btn-rename:hover {
+            background: #fde68a;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
+        .btn-favorite {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1px solid #fed7aa;
+        }
+
+        .btn-favorite.active {
+            background: #f97316;
+            color: #ffffff;
+            border-color: #f97316;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 0.75rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-save:hover {
+            background: var(--accent-light);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .clips-table {
+                font-size: 0.9rem;
+            }
+
+            .clips-table th,
+            .clips-table td {
+                padding: 0.75rem;
+            }
+
+            .clip-actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <div class="sidebar">
+            <div class="logo">DocVoice Pro</div>
+            <nav>
+                <a href="/dashboard" class="nav-item">Dashboard</a>
+                <a href="/my-pdfs.html" class="nav-item">My PDFs</a>
+                <a href="/voices.html" class="nav-item active">Voices</a>
+                <a href="/favorites.html" class="nav-item">Favorites</a>
+                <a href="/settings.html" class="nav-item">Settings</a>
+                <a href="#logout" onclick="logout()" class="nav-item">Logout</a>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="header-title">Voice Clips</div>
+                <div class="user-menu">
+                    <div class="user-badge" id="headerUserBadge" title="Active user">
+                        <img class="user-avatar" id="headerUserAvatar" alt="User avatar" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMTQiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSIxNCIgeT0iMTgiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0NzU1NjkiPvCfkbY8L3RleHQ+PC9zdmc+">
+                        <span class="user-name" id="headerUserName">User</span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="page-title">Your Voice Recordings</div>
+                <p class="page-subtitle">Manage all your recorded voice clips and reading sessions.</p>
+
+                <div id="clipsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div class="modal" id="renameModal">
+        <div class="modal-content">
+            <div class="modal-title">Rename Clip</div>
+            <input type="text" id="renameInput" class="modal-input" placeholder="Enter new name...">
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeRenameModal()">Cancel</button>
+                <button class="btn-save" onclick="saveRename()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = `${window.location.origin}/api`;
+        let currentClipId = null;
+        let clipsMap = {};
+        let activeSpeech = null;
+        let activeClipId = null;
+
+        async function bootstrapLocalSessionIfNeeded() {
+            const stored = localStorage.getItem('userSession');
+            if (!stored) return false;
+
+            try {
+                const user = JSON.parse(stored);
+                const response = await fetch(`${API_URL}/auth/session/local`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        role: user.role || 'user',
+                        firstName: user.firstName || '',
+                        lastName: user.lastName || '',
+                        name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                    })
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(`${API_URL}/auth/session`);
+                const data = await res.json();
+                let currentUser = data.authenticated ? data.user : null;
+                if (!data.authenticated) {
+                    const restored = await bootstrapLocalSessionIfNeeded();
+                    if (!restored) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    const refreshed = await fetch(`${API_URL}/auth/session`);
+                    const refreshedData = await refreshed.json();
+                    currentUser = refreshedData.authenticated ? refreshedData.user : null;
+                }
+                setHeaderUserBadge(currentUser);
+                loadClips();
+            } catch (err) {
+                console.error('Auth check failed:', err);
+                window.location.href = '/login';
+            }
+        }
+
+        function setHeaderUserBadge(user) {
+            const avatar = document.getElementById('headerUserAvatar');
+            const name = document.getElementById('headerUserName');
+            const fullName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || 'User';
+
+            if (name) {
+                name.textContent = fullName;
+            }
+
+            if (avatar) {
+                avatar.src = user?.picture || avatar.src;
+            }
+        }
+
+        async function loadClips() {
+            const container = document.getElementById('clipsList');
+            container.innerHTML = '<div class="loading">Loading voice clips...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/voice-clips`);
+                if (!res.ok) throw new Error('Failed to fetch clips');
+
+                const data = res.json();
+                const clips = (await data).clips || [];
+                clipsMap = clips.reduce((acc, clip) => {
+                    acc[clip.id] = clip;
+                    return acc;
+                }, {});
+
+                if (clips.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🎤</div>
+                            <h3>No voice clips yet</h3>
+                            <p>Your voice recordings will appear here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const tbody = clips.map(clip => `
+                    <tr id="clip-${clip.id}">
+                        <td>
+                            <div class="clip-name">${clip.fileName}</div>
+                            <div class="clip-meta">Duration: ${clip.duration}s</div>
+                        </td>
+                        <td>
+                            ${getAccuracyBadge(clip.accuracy)}
+                        </td>
+                        <td class="clip-meta">
+                            ${new Date(clip.createdAt).toLocaleDateString()} ${new Date(clip.createdAt).toLocaleTimeString()}
+                        </td>
+                        <td>
+                            <div class="clip-actions">
+                                <button class="btn-icon btn-play" id="play-btn-${clip.id}" onclick="playClip('${clip.id}')" title="Play Clip">▶</button>
+                                <button class="btn-icon btn-favorite ${clip.isFavorite ? 'active' : ''}" onclick="toggleVoiceFavorite('${clip.id}', this)" title="Toggle Favorite">★</button>
+                                <button class="btn-icon btn-rename" onclick="openRenameModal('${clip.id}')" title="Rename">✏️</button>
+                                <button class="btn-icon btn-download" onclick="downloadClip('${clip.id}')" title="Download">⬇️</button>
+                                <button class="btn-icon btn-delete" onclick="deleteClip('${clip.id}')" title="Delete">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+                container.innerHTML = `
+                    <table class="clips-table">
+                        <thead>
+                            <tr>
+                                <th>Clip Name</th>
+                                <th>Accuracy</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tbody}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error('Error loading clips:', err);
+                container.innerHTML = '<div class="empty-state" style="color: var(--danger);">Error loading voice clips. Please try again.</div>';
+            }
+        }
+
+        function getAccuracyBadge(accuracy) {
+            accuracy = accuracy || 0;
+            let className = 'accuracy-low';
+            if (accuracy >= 70) className = 'accuracy-high';
+            else if (accuracy >= 50) className = 'accuracy-medium';
+
+            return `<span class="accuracy-badge ${className}">${accuracy}% Accuracy</span>`;
+        }
+
+        function resetPlayButtons() {
+            document.querySelectorAll('[id^="play-btn-"]').forEach((btn) => {
+                btn.textContent = '▶';
+                btn.title = 'Play Clip';
+            });
+        }
+
+        function stopCurrentClipPlayback() {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+            activeSpeech = null;
+            activeClipId = null;
+            resetPlayButtons();
+        }
+
+        function playClip(clipId) {
+            const clip = clipsMap[clipId];
+            if (!clip) {
+                alert('Clip not found');
+                return;
+            }
+
+            const textToPlay = String(clip.recordedContent || '').trim();
+            if (!textToPlay) {
+                alert('No playable transcript available for this clip.');
+                return;
+            }
+
+            if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
+                alert('Playback is not supported in this browser.');
+                return;
+            }
+
+            if (activeClipId === clipId) {
+                stopCurrentClipPlayback();
+                return;
+            }
+
+            stopCurrentClipPlayback();
+
+            const utterance = new SpeechSynthesisUtterance(textToPlay);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.95;
+
+            utterance.onend = () => {
+                stopCurrentClipPlayback();
+            };
+
+            utterance.onerror = () => {
+                stopCurrentClipPlayback();
+            };
+
+            activeSpeech = utterance;
+            activeClipId = clipId;
+            const btn = document.getElementById(`play-btn-${clipId}`);
+            if (btn) {
+                btn.textContent = '⏹';
+                btn.title = 'Stop Clip';
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function openRenameModal(clipId) {
+            currentClipId = clipId;
+            const clipName = document.querySelector(`#clip-${clipId} .clip-name`).textContent;
+            document.getElementById('renameInput').value = clipName;
+            document.getElementById('renameModal').classList.add('active');
+            document.getElementById('renameInput').focus();
+        }
+
+        function closeRenameModal() {
+            document.getElementById('renameModal').classList.remove('active');
+            currentClipId = null;
+        }
+
+        async function saveRename() {
+            const newName = document.getElementById('renameInput').value.trim();
+            if (!newName) {
+                alert('Please enter a name');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/voice-clips/${currentClipId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fileName: newName })
+                });
+
+                if (!res.ok) throw new Error('Failed to rename clip');
+
+                document.querySelector(`#clip-${currentClipId} .clip-name`).textContent = newName;
+                closeRenameModal();
+            } catch (err) {
+                console.error('Error renaming clip:', err);
+                alert('Failed to rename clip');
+            }
+        }
+
+        function downloadClip(clipId) {
+            // In a real app, this would download the audio file
+            alert('Downloading clip...');
+        }
+
+        async function toggleVoiceFavorite(clipId, button) {
+            try {
+                const isFavorite = button.classList.contains('active');
+                const method = isFavorite ? 'DELETE' : 'POST';
+                const res = await fetch(`${API_URL}/favorites/voice/${clipId}`, { method });
+                if (!res.ok) throw new Error('Failed to update favorite');
+
+                button.classList.toggle('active');
+                if (clipsMap[clipId]) {
+                    clipsMap[clipId].isFavorite = !isFavorite;
+                }
+            } catch (err) {
+                console.error('Error updating voice favorite:', err);
+                alert('Failed to update voice favorite');
+            }
+        }
+
+        async function deleteClip(clipId) {
+            if (!confirm('Are you sure you want to delete this clip?')) return;
+
+            try {
+                const res = await fetch(`${API_URL}/voice-clips/${clipId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to delete clip');
+
+                const row = document.getElementById(`clip-${clipId}`);
+                row.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => {
+                    row.remove();
+                    if (document.querySelectorAll('[id^="clip-"]').length === 0) {
+                        loadClips();
+                    }
+                }, 300);
+            } catch (err) {
+                console.error('Error deleting clip:', err);
+                alert('Failed to delete clip');
+            }
+        }
+
+        function logout() {
+            stopCurrentClipPlayback();
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/api/auth/logout';
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeRenameModal();
+        });
+
+        window.addEventListener('beforeunload', () => {
+            stopCurrentClipPlayback();
+        });
+
+        checkAuth();
+    </script>
+</body>
+</html>

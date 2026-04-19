@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites - DocVoice Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #0d9488;
+            --accent-light: #14b8a6;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --warning: #ea580c;
+            --danger: #dc2626;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard-layout {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+
+        .header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.35rem 0.55rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--bg-light);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #e2e8f0;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            max-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-logout {
+            background: var(--accent);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: var(--accent-light);
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #eff6ff;
+            color: var(--accent);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .favorites-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .favorite-card {
+            background: var(--bg-white);
+            border: 2px solid var(--warning);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .favorite-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .favorite-header {
+            background: linear-gradient(135deg, var(--warning), #f97316);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .favorite-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .favorite-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            word-break: break-word;
+        }
+
+        .favorite-meta {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .favorite-body {
+            padding: 1.5rem;
+        }
+
+        .favorite-info {
+            margin-bottom: 1rem;
+        }
+
+        .favorite-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .favorite-value {
+            font-size: 1rem;
+            color: var(--primary);
+        }
+
+        .favorite-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .voice-favorite-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-read {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-read:hover {
+            background: var(--accent-light);
+        }
+
+        .btn-remove {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .btn-remove:hover {
+            background: #fecaca;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .favorites-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <div class="sidebar">
+            <div class="logo">DocVoice Pro</div>
+            <nav>
+                <a href="/dashboard" class="nav-item">Dashboard</a>
+                <a href="/my-pdfs.html" class="nav-item">My PDFs</a>
+                <a href="/voices.html" class="nav-item">Voices</a>
+                <a href="/favorites.html" class="nav-item active">Favorites</a>
+                <a href="/settings.html" class="nav-item">Settings</a>
+                <a href="#logout" onclick="logout()" class="nav-item">Logout</a>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="header-title">Favorites</div>
+                <div class="user-menu">
+                    <div class="user-badge" id="headerUserBadge" title="Active user">
+                        <img class="user-avatar" id="headerUserAvatar" alt="User avatar" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMTQiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSIxNCIgeT0iMTgiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0NzU1NjkiPvCfkbY8L3RleHQ+PC9zdmc+">
+                        <span class="user-name" id="headerUserName">User</span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="page-title">Your Favorite PDFs</div>
+                <p class="page-subtitle">Quick access to your favorite PDFs and voice clips.</p>
+
+                <div id="favoritesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = `${window.location.origin}/api`;
+
+        async function bootstrapLocalSessionIfNeeded() {
+            const stored = localStorage.getItem('userSession');
+            if (!stored) return false;
+
+            try {
+                const user = JSON.parse(stored);
+                const response = await fetch(`${API_URL}/auth/session/local`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        role: user.role || 'user',
+                        firstName: user.firstName || '',
+                        lastName: user.lastName || '',
+                        name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                    })
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(`${API_URL}/auth/session`);
+                const data = await res.json();
+                let currentUser = data.authenticated ? data.user : null;
+                if (!data.authenticated) {
+                    const restored = await bootstrapLocalSessionIfNeeded();
+                    if (!restored) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    const refreshed = await fetch(`${API_URL}/auth/session`);
+                    const refreshedData = await refreshed.json();
+                    currentUser = refreshedData.authenticated ? refreshedData.user : null;
+                }
+                setHeaderUserBadge(currentUser);
+                loadFavorites();
+            } catch (err) {
+                console.error('Auth check failed:', err);
+                window.location.href = '/login';
+            }
+        }
+
+        function setHeaderUserBadge(user) {
+            const avatar = document.getElementById('headerUserAvatar');
+            const name = document.getElementById('headerUserName');
+            const fullName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || 'User';
+
+            if (name) {
+                name.textContent = fullName;
+            }
+
+            if (avatar) {
+                avatar.src = user?.picture || avatar.src;
+            }
+        }
+
+        async function loadFavorites() {
+            const container = document.getElementById('favoritesList');
+            container.innerHTML = '<div class="loading">Loading favorites...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/favorites/all`);
+                if (!res.ok) throw new Error('Failed to fetch favorites');
+
+                const data = await res.json();
+                const favoritePdfs = data.pdfs || [];
+                const favoriteClips = data.clips || [];
+
+                if (favoritePdfs.length === 0 && favoriteClips.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">⭐</div>
+                            <h3>No favorites yet</h3>
+                            <p>Star your important PDFs and voice clips to add them to favorites.</p>
+                            <a href="/my-pdfs.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">Browse My PDFs →</a><br>
+                            <a href="/voices.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">Browse Voices →</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const pdfHtml = favoritePdfs.length ? `<div class="favorites-section">
+                    <div class="section-title">Favorite PDFs</div>
+                    <div class="favorites-grid">${favoritePdfs.map(fav => `
+                    <div class="favorite-card" id="fav-${fav.id}">
+                        <div class="favorite-header">
+                            <div class="favorite-icon">⭐</div>
+                            <div class="favorite-name" title="${fav.fileName}">${fav.fileName}</div>
+                            <div class="favorite-meta">${fav.totalPages} pages</div>
+                        </div>
+                        <div class="favorite-body">
+                            <div class="favorite-info">
+                                <div class="favorite-label">PAGES</div>
+                                <div class="favorite-value">${fav.totalPages}</div>
+                            </div>
+                            <div class="favorite-info">
+                                <div class="favorite-label">PROGRESS</div>
+                                <div class="favorite-value">${fav.readingProgress || 0}% Complete</div>
+                            </div>
+                            <div class="favorite-info">
+                                <div class="favorite-label">ADDED</div>
+                                <div class="favorite-value">${new Date(fav.uploadDate).toLocaleDateString()}</div>
+                            </div>
+                            <div class="favorite-actions" style="margin-top: 1.5rem;">
+                                <button class="btn-small btn-read" onclick="continuePDF('${fav.id}')">📖 Continue</button>
+                                <button class="btn-small btn-remove" onclick="removeFavoritePdf('${fav.id}')">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}</div></div>` : '';
+
+                const voiceHtml = favoriteClips.length ? `<div class="favorites-section">
+                    <div class="section-title">Favorite Voice Clips</div>
+                    <div class="favorites-grid">${favoriteClips.map(clip => `
+                        <div class="voice-favorite-card" id="voice-fav-${clip.id}">
+                            <div class="favorite-info">
+                                <div class="favorite-label">CLIP NAME</div>
+                                <div class="favorite-value">${clip.fileName}</div>
+                            </div>
+                            <div class="favorite-info">
+                                <div class="favorite-label">DURATION</div>
+                                <div class="favorite-value">${clip.duration || 0}s</div>
+                            </div>
+                            <div class="favorite-info">
+                                <div class="favorite-label">ACCURACY</div>
+                                <div class="favorite-value">${clip.accuracy || 0}%</div>
+                            </div>
+                            <div class="favorite-info">
+                                <div class="favorite-label">SAVED ON</div>
+                                <div class="favorite-value">${new Date(clip.createdAt).toLocaleDateString()}</div>
+                            </div>
+                            <div class="favorite-actions" style="margin-top: 1rem;">
+                                <button class="btn-small btn-read" onclick="goToVoices()">🎧 Open Voices</button>
+                                <button class="btn-small btn-remove" onclick="removeFavoriteVoice('${clip.id}')">Remove</button>
+                            </div>
+                        </div>
+                    `).join('')}</div>
+                </div>` : '';
+
+                container.innerHTML = `${pdfHtml}${voiceHtml}`;
+            } catch (err) {
+                console.error('Error loading favorites:', err);
+                container.innerHTML = '<div class="empty-state" style="color: var(--danger);">Error loading favorites. Please try again.</div>';
+            }
+        }
+
+        function continuePDF(pdfId) {
+            localStorage.setItem('currentPdfId', pdfId);
+            window.location.href = '/index.html';
+        }
+
+        async function removeFavoritePdf(pdfId) {
+            try {
+                const res = await fetch(`${API_URL}/favorites/${pdfId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to remove favorite');
+
+                const card = document.getElementById(`fav-${pdfId}`);
+                card.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => {
+                    card.remove();
+                    if (document.querySelectorAll('.favorite-card').length === 0) {
+                        loadFavorites();
+                    }
+                }, 300);
+            } catch (err) {
+                console.error('Error removing favorite:', err);
+                alert('Failed to remove favorite');
+            }
+        }
+
+        async function removeFavoriteVoice(clipId) {
+            try {
+                const res = await fetch(`${API_URL}/favorites/voice/${clipId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to remove voice favorite');
+
+                const card = document.getElementById(`voice-fav-${clipId}`);
+                if (card) {
+                    card.style.animation = 'fadeOut 0.3s ease-out';
+                }
+                setTimeout(() => {
+                    loadFavorites();
+                }, 300);
+            } catch (err) {
+                console.error('Error removing voice favorite:', err);
+                alert('Failed to remove voice favorite');
+            }
+        }
+
+        function goToVoices() {
+            window.location.href = '/voices.html';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/api/auth/logout';
+            }
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>

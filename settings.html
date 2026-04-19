@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - DocVoice Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #0d9488;
+            --accent-light: #14b8a6;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
+            --success: #16a34a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard-layout {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+
+        .header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.35rem 0.55rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--bg-light);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #e2e8f0;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            max-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-logout {
+            background: var(--accent);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: var(--accent-light);
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #eff6ff;
+            color: var(--accent);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .settings-section {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .setting-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .setting-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .setting-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .setting-input,
+        .setting-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .setting-input:focus,
+        .setting-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            background: var(--accent-light);
+            transform: scale(1.2);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .slider::-moz-range-thumb:hover {
+            background: var(--accent-light);
+            transform: scale(1.2);
+        }
+
+        .slider-value {
+            min-width: 50px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-button {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+
+        .slider-button:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-button {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider-button:before {
+            transform: translateX(26px);
+        }
+
+        .btn-save {
+            background: var(--accent);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-save:hover {
+            background: var(--accent-light);
+        }
+
+        .btn-save.saving {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .profile-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border);
+            background: #eef2ff;
+        }
+
+        .btn-upload-photo {
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--text-primary);
+            border-radius: 6px;
+            padding: 0.5rem 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .settings-section {
+                padding: 1.5rem;
+            }
+
+            .slider-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .slider-value {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <div class="sidebar">
+            <div class="logo">DocVoice Pro</div>
+            <nav>
+                <a href="/dashboard" class="nav-item">Dashboard</a>
+                <a href="/my-pdfs.html" class="nav-item">My PDFs</a>
+                <a href="/voices.html" class="nav-item">Voices</a>
+                <a href="/favorites.html" class="nav-item">Favorites</a>
+                <a href="/settings.html" class="nav-item active">Settings</a>
+                <a href="#logout" onclick="logout()" class="nav-item">Logout</a>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="header-title">Settings</div>
+                <div class="user-menu">
+                    <div class="user-badge" id="headerUserBadge" title="Active user">
+                        <img class="user-avatar" id="headerUserAvatar" alt="User avatar" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMTQiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSIxNCIgeT0iMTgiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0NzU1NjkiPvCfkbY8L3RleHQ+PC9zdmc+">
+                        <span class="user-name" id="headerUserName">User</span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="page-title">Preferences</div>
+                <p class="page-subtitle">Customize your reading experience.</p>
+
+                <div class="success-message" id="successMessage">✓ Settings saved successfully!</div>
+
+                <!-- Profile Settings -->
+                <div class="settings-section">
+                    <div class="section-title">👤 Profile</div>
+
+                    <div class="profile-row">
+                        <img src="" alt="Profile" id="profilePreview" class="profile-avatar">
+                        <div>
+                            <label class="btn-upload-photo" for="profilePicInput">Upload Photo</label>
+                            <input type="file" id="profilePicInput" accept="image/*" style="display:none;">
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">First Name</label>
+                        <input type="text" id="profileFirstName" class="setting-input" placeholder="First name">
+                    </div>
+                    <div class="setting-group">
+                        <label class="setting-label">Last Name</label>
+                        <input type="text" id="profileLastName" class="setting-input" placeholder="Last name">
+                    </div>
+                    <div class="setting-group">
+                        <label class="setting-label">Email</label>
+                        <input type="email" id="profileEmail" class="setting-input" placeholder="Email address">
+                    </div>
+                    <button class="btn-save" type="button" onclick="saveProfile()" id="saveProfileBtn">Save Profile</button>
+                </div>
+
+                <!-- Reading Settings -->
+                <div class="settings-section">
+                    <div class="section-title">📖 Reading Settings</div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Lines Per Screen</label>
+                        <p class="setting-description">How many lines to display at once</p>
+                        <select id="linesPerScreen" class="setting-select">
+                            <option value="4">4 lines</option>
+                            <option value="6" selected>6 lines</option>
+                            <option value="8">8 lines</option>
+                            <option value="all">All lines</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Font Size</label>
+                        <p class="setting-description">Adjust text size for better readability</p>
+                        <div class="slider-group">
+                            <input type="range" id="fontSize" class="slider" min="80" max="150" value="100">
+                            <span class="slider-value" id="fontSizeValue">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Speech Accent</label>
+                        <p class="setting-description">Select your preferred English accent</p>
+                        <select id="accent" class="setting-select">
+                            <option value="en-US">🇺🇸 American English</option>
+                            <option value="en-GB">🇬🇧 British English</option>
+                            <option value="en-IN">🇮🇳 Indian English</option>
+                            <option value="en-AU">🇦🇺 Australian English</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Audio Settings -->
+                <div class="settings-section">
+                    <div class="section-title">🔊 Audio Settings</div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Speech Rate</label>
+                        <p class="setting-description">Control playback speed</p>
+                        <div class="slider-group">
+                            <input type="range" id="speechRate" class="slider" min="0.5" max="2" step="0.1" value="1">
+                            <span class="slider-value" id="speechRateValue">1.0x</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Volume</label>
+                        <p class="setting-description">Adjust playback volume</p>
+                        <div class="slider-group">
+                            <input type="range" id="volume" class="slider" min="0" max="100" value="100">
+                            <span class="slider-value" id="volumeValue">100%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recognition Settings -->
+                <div class="settings-section">
+                    <div class="section-title">🎤 Recognition Settings</div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Accuracy Threshold</label>
+                        <p class="setting-description">Minimum accuracy required to mark text as recognized</p>
+                        <div class="slider-group">
+                            <input type="range" id="accuracyThreshold" class="slider" min="30" max="90" value="50">
+                            <span class="slider-value" id="accuracyValue">50%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Toggles -->
+                <div class="settings-section">
+                    <div class="section-title">⚙️ Features</div>
+
+                    <div class="setting-group">
+                        <div class="toggle-switch">
+                            <label class="setting-label" style="margin: 0;">Auto-save Voice Clips</label>
+                            <label class="switch">
+                                <input type="checkbox" id="autoSaveClips" checked>
+                                <span class="slider-button"></span>
+                            </label>
+                        </div>
+                        <p class="setting-description">Automatically save voice recordings during sessions</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <div class="toggle-switch">
+                            <label class="setting-label" style="margin: 0;">Auto-playback</label>
+                            <label class="switch">
+                                <input type="checkbox" id="autoPlayback">
+                                <span class="slider-button"></span>
+                            </label>
+                        </div>
+                        <p class="setting-description">Start playback automatically when opening a document</p>
+                    </div>
+                </div>
+
+                <button class="btn-save" onclick="saveSettings()" id="saveBtn">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = `${window.location.origin}/api`;
+        let pendingProfilePicture = '';
+
+        async function bootstrapLocalSessionIfNeeded() {
+            const stored = localStorage.getItem('userSession');
+            if (!stored) return false;
+
+            try {
+                const user = JSON.parse(stored);
+                const response = await fetch(`${API_URL}/auth/session/local`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        role: user.role || 'user',
+                        firstName: user.firstName || '',
+                        lastName: user.lastName || '',
+                        name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                    })
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(`${API_URL}/auth/session`);
+                const data = await res.json();
+                let currentUser = data.authenticated ? data.user : null;
+                if (!data.authenticated) {
+                    const restored = await bootstrapLocalSessionIfNeeded();
+                    if (!restored) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    const refreshed = await fetch(`${API_URL}/auth/session`);
+                    const refreshedData = await refreshed.json();
+                    currentUser = refreshedData.authenticated ? refreshedData.user : null;
+                }
+                setHeaderUserBadge(currentUser);
+                loadProfile();
+                loadSettings();
+            } catch (err) {
+                console.error('Auth check failed:', err);
+                window.location.href = '/login';
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                const res = await fetch(`${API_URL}/user/profile`);
+                if (!res.ok) throw new Error('Failed to fetch profile');
+                const data = await res.json();
+                const profile = data.profile || {};
+
+                document.getElementById('profileFirstName').value = profile.firstName || '';
+                document.getElementById('profileLastName').value = profile.lastName || '';
+                document.getElementById('profileEmail').value = profile.email || '';
+                document.getElementById('profilePreview').src = profile.picture || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMzYiIGN5PSIzNiIgcj0iMzYiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSIzNiIgeT0iNDAiIGZvbnQtc2l6ZT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2NDc0OGIiPvCfkbY8L3RleHQ+PC9zdmc+';
+                setHeaderUserBadge(profile);
+            } catch (err) {
+                console.error('Error loading profile:', err);
+            }
+        }
+
+        function setHeaderUserBadge(user) {
+            const avatar = document.getElementById('headerUserAvatar');
+            const name = document.getElementById('headerUserName');
+            const fullName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || 'User';
+
+            if (name) {
+                name.textContent = fullName;
+            }
+
+            if (avatar) {
+                avatar.src = user?.picture || avatar.src;
+            }
+        }
+
+        async function saveProfile() {
+            const btn = document.getElementById('saveProfileBtn');
+            btn.classList.add('saving');
+            btn.textContent = 'Saving...';
+
+            const payload = {
+                firstName: document.getElementById('profileFirstName').value.trim(),
+                lastName: document.getElementById('profileLastName').value.trim(),
+                email: document.getElementById('profileEmail').value.trim(),
+                picture: pendingProfilePicture || document.getElementById('profilePreview').src || ''
+            };
+            payload.name = `${payload.firstName} ${payload.lastName}`.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/user/profile`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Failed to save profile');
+
+                const existingRaw = localStorage.getItem('userSession');
+                const existing = existingRaw ? JSON.parse(existingRaw) : {};
+                localStorage.setItem('userSession', JSON.stringify({
+                    ...existing,
+                    firstName: payload.firstName,
+                    lastName: payload.lastName,
+                    email: payload.email,
+                    name: payload.name
+                }));
+
+                const successMsg = document.getElementById('successMessage');
+                successMsg.textContent = '✓ Profile saved successfully!';
+                successMsg.classList.add('show');
+                setTimeout(() => successMsg.classList.remove('show'), 3000);
+            } catch (err) {
+                console.error('Error saving profile:', err);
+                alert('Failed to save profile');
+            } finally {
+                btn.classList.remove('saving');
+                btn.textContent = 'Save Profile';
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const res = await fetch(`${API_URL}/settings`);
+                if (!res.ok) throw new Error('Failed to fetch settings');
+
+                const data = await res.json();
+                const settings = data.settings || {};
+
+                // Populate form with saved settings
+                document.getElementById('linesPerScreen').value = settings.linesPerScreen || 6;
+                document.getElementById('fontSize').value = settings.fontSize || 100;
+                document.getElementById('accent').value = settings.accent || 'en-US';
+                document.getElementById('speechRate').value = settings.speechRate || 1;
+                document.getElementById('volume').value = (settings.volume || 1) * 100;
+                document.getElementById('accuracyThreshold').value = settings.accuracyThreshold || 50;
+                document.getElementById('autoSaveClips').checked = settings.autoSaveClips !== false;
+                document.getElementById('autoPlayback').checked = settings.autoPlayback === true;
+
+                // Update slider displays
+                updateSliderDisplays();
+            } catch (err) {
+                console.error('Error loading settings:', err);
+            }
+        }
+
+        function updateSliderDisplays() {
+            document.getElementById('fontSizeValue').textContent = document.getElementById('fontSize').value + '%';
+            document.getElementById('speechRateValue').textContent = parseFloat(document.getElementById('speechRate').value).toFixed(1) + 'x';
+            document.getElementById('volumeValue').textContent = document.getElementById('volume').value + '%';
+            document.getElementById('accuracyValue').textContent = document.getElementById('accuracyThreshold').value + '%';
+        }
+
+        // Update displays when sliders change
+        document.getElementById('fontSize').addEventListener('input', updateSliderDisplays);
+        document.getElementById('speechRate').addEventListener('input', updateSliderDisplays);
+        document.getElementById('volume').addEventListener('input', updateSliderDisplays);
+        document.getElementById('accuracyThreshold').addEventListener('input', updateSliderDisplays);
+
+        document.getElementById('profilePicInput').addEventListener('change', (event) => {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                pendingProfilePicture = String(reader.result || '');
+                document.getElementById('profilePreview').src = pendingProfilePicture;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        async function saveSettings() {
+            const btn = document.getElementById('saveBtn');
+            btn.classList.add('saving');
+            btn.textContent = 'Saving...';
+
+            const settings = {
+                linesPerScreen: document.getElementById('linesPerScreen').value,
+                fontSize: Number(document.getElementById('fontSize').value),
+                accent: document.getElementById('accent').value,
+                speechRate: parseFloat(document.getElementById('speechRate').value),
+                volume: parseFloat(document.getElementById('volume').value) / 100,
+                accuracyThreshold: Number(document.getElementById('accuracyThreshold').value),
+                autoSaveClips: document.getElementById('autoSaveClips').checked,
+                autoPlayback: document.getElementById('autoPlayback').checked
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                if (!res.ok) throw new Error('Failed to save settings');
+
+                // Show success message
+                const successMsg = document.getElementById('successMessage');
+                successMsg.classList.add('show');
+                setTimeout(() => successMsg.classList.remove('show'), 3000);
+            } catch (err) {
+                console.error('Error saving settings:', err);
+                alert('Failed to save settings');
+            } finally {
+                btn.classList.remove('saving');
+                btn.textContent = 'Save Settings';
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/api/auth/logout';
+            }
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>

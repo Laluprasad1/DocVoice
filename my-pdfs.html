@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My PDFs - DocVoice Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #0d9488;
+            --accent-light: #14b8a6;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --warning: #ea580c;
+            --danger: #dc2626;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard-layout {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+
+        .header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.35rem 0.55rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--bg-light);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #e2e8f0;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            max-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-logout {
+            background: var(--accent);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: var(--accent-light);
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #eff6ff;
+            color: var(--accent);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-light);
+        }
+
+        .pdfs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .pdf-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .pdf-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.1);
+        }
+
+        .pdf-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e293b 100%);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .pdf-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pdf-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            word-break: break-word;
+        }
+
+        .pdf-meta {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-info {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .pdf-body {
+            padding: 1.5rem;
+        }
+
+        .progress-section {
+            margin-bottom: 1rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .pdf-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-read {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-read:hover {
+            background: var(--accent-light);
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+        }
+
+        .btn-favorite {
+            background: white;
+            color: var(--warning);
+            border: 2px solid var(--warning);
+        }
+
+        .btn-favorite.active {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-favorite:hover {
+            background: var(--warning);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+                border: none;
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .pdfs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-bar {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <div class="sidebar">
+            <div class="logo">DocVoice Pro</div>
+            <nav>
+                <a href="/dashboard" class="nav-item">Dashboard</a>
+                <a href="/my-pdfs.html" class="nav-item active">My PDFs</a>
+                <a href="/voices.html" class="nav-item">Voices</a>
+                <a href="/favorites.html" class="nav-item">Favorites</a>
+                <a href="/settings.html" class="nav-item">Settings</a>
+                <a href="#logout" onclick="logout()" class="nav-item">Logout</a>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="header-title">My PDFs</div>
+                <div class="user-menu">
+                    <div class="user-badge" id="headerUserBadge" title="Active user">
+                        <img class="user-avatar" id="headerUserAvatar" alt="User avatar" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMTQiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSIxNCIgeT0iMTgiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0NzU1NjkiPvCfkbY8L3RleHQ+PC9zdmc+">
+                        <span class="user-name" id="headerUserName">User</span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="page-title">Your Documents</div>
+                <p class="page-subtitle">Manage and continue reading your PDFs.</p>
+
+                <div class="action-bar">
+                    <input type="text" id="searchBox" class="search-box" placeholder="Search PDFs...">
+                    <a href="/index.html" class="btn-primary">+ Upload New PDF</a>
+                </div>
+
+                <div id="pdfsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = `${window.location.origin}/api`;
+
+        async function bootstrapLocalSessionIfNeeded() {
+            const stored = localStorage.getItem('userSession');
+            if (!stored) return false;
+
+            try {
+                const user = JSON.parse(stored);
+                const response = await fetch(`${API_URL}/auth/session/local`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        role: user.role || 'user',
+                        firstName: user.firstName || '',
+                        lastName: user.lastName || '',
+                        name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                    })
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(`${API_URL}/auth/session`);
+                const data = await res.json();
+                let currentUser = data.authenticated ? data.user : null;
+                if (!data.authenticated) {
+                    const restored = await bootstrapLocalSessionIfNeeded();
+                    if (!restored) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    const refreshed = await fetch(`${API_URL}/auth/session`);
+                    const refreshedData = await refreshed.json();
+                    currentUser = refreshedData.authenticated ? refreshedData.user : null;
+                }
+                setHeaderUserBadge(currentUser);
+                loadPDFs();
+            } catch (err) {
+                console.error('Auth check failed:', err);
+                window.location.href = '/login';
+            }
+        }
+
+        function setHeaderUserBadge(user) {
+            const avatar = document.getElementById('headerUserAvatar');
+            const name = document.getElementById('headerUserName');
+            const fullName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || 'User';
+
+            if (name) {
+                name.textContent = fullName;
+            }
+
+            if (avatar) {
+                avatar.src = user?.picture || avatar.src;
+            }
+        }
+
+        async function loadPDFs() {
+            const container = document.getElementById('pdfsList');
+            container.innerHTML = '<div class="loading">Loading PDFs...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/pdfs`);
+                if (!res.ok) throw new Error('Failed to fetch PDFs');
+
+                const data = await res.json();
+                const pdfs = data.pdfs || [];
+
+                if (pdfs.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📁</div>
+                            <h3>No PDFs yet</h3>
+                            <p>Upload your first PDF to get started.</p>
+                            <a href="/index.html" class="btn-primary" style="display: inline-block; margin-top: 1rem;">Upload PDF</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = `<div class="pdfs-grid">${pdfs.map(pdf => `
+                    <div class="pdf-card" id="pdf-${pdf.id}">
+                        <div class="pdf-header">
+                            <div class="pdf-icon">📄</div>
+                            <div class="pdf-name" title="${pdf.fileName}">${pdf.fileName}</div>
+                            <div class="pdf-meta">${pdf.totalPages} pages</div>
+                            <div class="progress-info">Progress: ${pdf.readingProgress || 0}%</div>
+                        </div>
+                        <div class="pdf-body">
+                            <div class="progress-section">
+                                <div class="progress-label">
+                                    <span>Reading Progress</span>
+                                    <span>${pdf.readingProgress || 0}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${pdf.readingProgress || 0}%"></div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                Uploaded: ${new Date(pdf.uploadDate).toLocaleDateString()}
+                            </div>
+                            <div class="pdf-actions">
+                                <button class="btn-small btn-read" onclick="continuePDF('${pdf.id}')">📖 Continue</button>
+                                <button class="btn-small btn-favorite ${pdf.isFavorite ? 'active' : ''}" onclick="toggleFavorite('${pdf.id}', this)">⭐</button>
+                                <button class="btn-small btn-delete" onclick="deletePDF('${pdf.id}')">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}</div>`;
+            } catch (err) {
+                console.error('Error loading PDFs:', err);
+                container.innerHTML = '<div class="empty-state" style="color: var(--danger);">Error loading PDFs. Please try again.</div>';
+            }
+        }
+
+        async function continuePDF(pdfId) {
+            try {
+                localStorage.setItem('currentPdfId', pdfId);
+
+                const [currentPageResponse, pdfMetaResponse] = await Promise.all([
+                    fetch(`${API_URL}/current-page`),
+                    fetch(`${API_URL}/pdfs/${encodeURIComponent(pdfId)}`)
+                ]);
+
+                if (currentPageResponse.ok && pdfMetaResponse.ok) {
+                    const currentPageData = await currentPageResponse.json();
+                    const pdfMetaData = await pdfMetaResponse.json();
+
+                    if (currentPageData && currentPageData.success && pdfMetaData && pdfMetaData.pdf) {
+                        const savedSession = {
+                            fileName: pdfMetaData.pdf.fileName || 'recent PDF',
+                            totalPages: Number(currentPageData.totalPages || pdfMetaData.pdf.totalPages || 0),
+                            currentPageIndex: Number(currentPageData.pageIndex || 0),
+                            completedPages: Number(currentPageData.pageIndex || 0),
+                            accuracyPercent: Number(pdfMetaData.pdf.readingProgress || 0),
+                            currentWordIndex: 0,
+                            currentSentenceIndex: 0,
+                            updatedAt: Date.now()
+                        };
+
+                        localStorage.setItem('pdf-speech-reader-session-v1', JSON.stringify(savedSession));
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to prepare reader session:', error);
+            }
+
+            window.location.href = '/index.html';
+        }
+
+        async function toggleFavorite(pdfId, button) {
+            try {
+                const isFavorite = button.classList.contains('active');
+                const method = isFavorite ? 'DELETE' : 'POST';
+                
+                const res = await fetch(`${API_URL}/favorites/${pdfId}`, { method });
+                if (!res.ok) throw new Error('Failed to update favorite');
+
+                button.classList.toggle('active');
+            } catch (err) {
+                console.error('Error updating favorite:', err);
+                alert('Failed to update favorite');
+            }
+        }
+
+        async function deletePDF(pdfId) {
+            if (!confirm('Are you sure you want to delete this PDF?')) return;
+
+            try {
+                const res = await fetch(`${API_URL}/pdfs/${pdfId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to delete PDF');
+
+                const card = document.getElementById(`pdf-${pdfId}`);
+                card.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => {
+                    card.remove();
+                    if (document.querySelectorAll('.pdf-card').length === 0) {
+                        loadPDFs();
+                    }
+                }, 300);
+            } catch (err) {
+                console.error('Error deleting PDF:', err);
+                alert('Failed to delete PDF');
+            }
+        }
+
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.pdf-card').forEach(card => {
+                const name = card.querySelector('.pdf-name').textContent.toLowerCase();
+                card.style.display = name.includes(query) ? '' : 'none';
+            });
+        });
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/api/auth/logout';
+            }
+        }
+
+        // Check auth and load PDFs on page load
+        checkAuth();
+    </script>
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - DocVoice Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #0d9488;
+            --accent-light: #14b8a6;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard-layout {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+
+        .header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.35rem 0.55rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--bg-light);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #e2e8f0;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            max-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-logout {
+            background: var(--accent);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: var(--accent-light);
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #eff6ff;
+            color: var(--accent);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--bg-white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .projects-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .project-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .project-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.1);
+        }
+
+        .project-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e293b 100%);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .project-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .project-status {
+            color: #cbd5e1;
+            font-size: 0.85rem;
+        }
+
+        .project-body {
+            padding: 1.5rem;
+        }
+
+        .progress-section {
+            margin-bottom: 1rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-small {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary-small:hover {
+            background: var(--accent-light);
+        }
+
+        .btn-outline-small {
+            background: var(--bg-light);
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline-small:hover {
+            background: white;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+                border: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <div class="sidebar">
+            <div class="logo">DocVoice Pro</div>
+            <nav>
+                <a href="/dashboard" class="nav-item active">Dashboard</a>
+                <a href="/my-pdfs.html" class="nav-item">My PDFs</a>
+                <a href="/voices.html" class="nav-item">Voices</a>
+                <a href="/favorites.html" class="nav-item">Favorites</a>
+                <a href="/settings.html" class="nav-item">Settings</a>
+                <a href="#logout" onclick="logout()" class="nav-item">Logout</a>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="header-title">Welcome, <span id="userName">User</span></div>
+                <div class="user-menu">
+                    <div class="user-badge" id="headerUserBadge" title="Active user">
+                        <img class="user-avatar" id="headerUserAvatar" alt="User avatar" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMTQiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSIxNCIgeT0iMTgiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0NzU1NjkiPvCfkbY8L3RleHQ+PC9zdmc+">
+                        <span class="user-name" id="headerUserName">User</span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="page-title">Workspace Overview</div>
+                <p class="page-subtitle">Uploads, playback, sessions.</p>
+
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-label">Documents Processed</div>
+                        <div class="stat-value" id="stat-docs">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Active Days</div>
+                        <div class="stat-value" id="stat-days">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Listening Hours</div>
+                        <div class="stat-value" id="stat-hours">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Voice Clips Saved</div>
+                        <div class="stat-value" id="stat-clips">0</div>
+                    </div>
+                </div>
+
+                <div class="projects-section">
+                    <h2 class="section-title">Active Modules</h2>
+                    <div class="projects-grid">
+                        <div class="project-card">
+                            <div class="project-header">
+                                <div class="project-title">DocVoice Pro</div>
+                                <div class="project-status">Live • Node.js • Web Audio</div>
+                            </div>
+                            <div class="project-body">
+                                <div class="progress-section">
+                                    <div class="progress-label">
+                                        <span>Progress</span>
+                                        <span>85%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                                <div class="project-actions">
+                                    <a href="/index.html" class="btn-small btn-primary-small">Open Reader</a>
+                                    <a href="/my-pdfs.html" class="btn-small btn-outline-small" style="text-decoration:none;text-align:center;">My PDFs</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="project-card">
+                            <div class="project-header">
+                                <div class="project-title">Speech Drafts</div>
+                                <div class="project-status">In Development • Draft Workspace</div>
+                            </div>
+                            <div class="project-body">
+                                <div class="progress-section">
+                                    <div class="progress-label">
+                                        <span>Progress</span>
+                                        <span>60%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 60%"></div>
+                                    </div>
+                                </div>
+                                <div class="project-actions">
+                                    <a href="/voices.html" class="btn-small btn-primary-small" style="text-decoration:none;text-align:center;">Open Voices</a>
+                                    <a href="/favorites.html" class="btn-small btn-outline-small" style="text-decoration:none;text-align:center;">Favorites</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="project-card">
+                            <div class="project-header">
+                                <div class="project-title">Speech-to-Text Writer</div>
+                                <div class="project-status">Planned • Voice Notes to Text</div>
+                            </div>
+                            <div class="project-body">
+                                <div class="progress-section">
+                                    <div class="progress-label">
+                                        <span>Progress</span>
+                                        <span>40%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 40%"></div>
+                                    </div>
+                                </div>
+                                <div class="project-actions">
+                                    <a href="/settings.html" class="btn-small btn-primary-small" style="text-decoration:none;text-align:center;">Open Settings</a>
+                                    <a href="/index.html" class="btn-small btn-outline-small" style="text-decoration:none;text-align:center;">Start Reading</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="projects-section">
+                    <h2 class="section-title">Operational Insights</h2>
+                    <div class="projects-grid">
+                        <div class="project-card">
+                            <div class="project-header">
+                                <div class="project-title">Recent Uploads</div>
+                                <div class="project-status">This week • 6 files</div>
+                            </div>
+                            <div class="project-body">
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">You uploaded 6 PDFs this week and completed playback for 4 of them.</p>
+                                <div class="project-actions">
+                                    <button class="btn-small btn-primary-small">History</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="project-card">
+                            <div class="project-header">
+                                <div class="project-title">Playback Preferences</div>
+                                <div class="project-status">Voice + Speed presets</div>
+                            </div>
+                            <div class="project-body">
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Default speed set to 1.1x with your preferred neutral voice profile.</p>
+                                <div class="project-actions">
+                                    <button class="btn-small btn-primary-small">Preferences</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="project-card">
+                            <div class="project-header">
+                                <div class="project-title">Release Notes</div>
+                                <div class="project-status">Upcoming module rollout</div>
+                            </div>
+                            <div class="project-body">
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Speech-to-Text Writer will be the next feature added to this project.</p>
+                                <div class="project-actions">
+                                    <button class="btn-small btn-primary-small">Notes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = `${window.location.origin}/api`;
+
+        async function bootstrapLocalSessionIfNeeded() {
+            const stored = localStorage.getItem('userSession');
+            if (!stored) return false;
+
+            try {
+                const user = JSON.parse(stored);
+                const response = await fetch(`${API_URL}/auth/session/local`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        role: user.role || 'user',
+                        firstName: user.firstName || '',
+                        lastName: user.lastName || '',
+                        name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                    })
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_URL}/user/stats`);
+                if (!res.ok) throw new Error('Failed to fetch stats');
+
+                const stats = await res.json();
+                document.getElementById('stat-docs').textContent = stats.documentsProcessed || 0;
+                document.getElementById('stat-days').textContent = stats.activeDays || 0;
+                document.getElementById('stat-hours').textContent = Math.round(stats.listeningHours * 10) / 10 || 0;
+                document.getElementById('stat-clips').textContent = stats.savedClips || 0;
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
+
+        async function loadUserData() {
+            try {
+                // Check session with backend
+                const response = await fetch(`${API_URL}/auth/session`, {
+                    credentials: 'include' // Include cookies
+                });
+                
+                const data = await response.json();
+                
+                if (!data.authenticated) {
+                    // Fallback to localStorage for backwards compatibility
+                    const userSession = localStorage.getItem('userSession');
+                    if (!userSession) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    const userData = JSON.parse(userSession);
+                    document.getElementById('userName').textContent = userData.firstName || userData.name || 'Learner';
+                    setHeaderUserBadge(userData);
+                    const restored = await bootstrapLocalSessionIfNeeded();
+                    if (restored) {
+                        loadStats();
+                    }
+                    return;
+                }
+                
+                // User is authenticated with backend session
+                const userData = data.user;
+                const displayName = userData.name?.split(' ')[0] || userData.firstName || 'Learner';
+                document.getElementById('userName').textContent = displayName;
+                setHeaderUserBadge(userData);
+
+                // Load stats from API
+                loadStats();
+                
+            } catch (error) {
+                console.error('Session check failed:', error);
+                // Fallback to localStorage
+                const userSession = localStorage.getItem('userSession');
+                if (!userSession) {
+                    window.location.href = '/login';
+                    return;
+                }
+                const userData = JSON.parse(userSession);
+                document.getElementById('userName').textContent = userData.firstName || 'Learner';
+                setHeaderUserBadge(userData);
+            }
+        }
+
+        function setHeaderUserBadge(user) {
+            const avatar = document.getElementById('headerUserAvatar');
+            const name = document.getElementById('headerUserName');
+            const fullName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || 'User';
+
+            if (name) {
+                name.textContent = fullName;
+            }
+
+            if (avatar) {
+                avatar.src = user?.picture || avatar.src;
+            }
+        }
+
+        async function logout() {
+            try {
+                // Call backend logout endpoint
+                await fetch(`${API_URL}/auth/logout`, {
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            // Clear localStorage for backwards compatibility
+            localStorage.removeItem('userSession');
+            window.location.href = '/';
+        }
+
+        window.addEventListener('load', loadUserData);
+    </script>
+</body>
+</html>
