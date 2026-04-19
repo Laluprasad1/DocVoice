@@ -1270,5 +1270,9 @@ function startServer(port, retriesLeft = MAX_PORT_RETRIES) {
   });
 }
 
-// Start server
-startServer(BASE_PORT);
+// Start local server only when not running as a Vercel serverless function.
+if (process.env.VERCEL !== '1') {
+  startServer(BASE_PORT);
+}
+
+module.exports = app;
